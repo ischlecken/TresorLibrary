@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="5064" systemVersion="13E28" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="Audit" representedClassName="Audit" syncable="YES">
+        <attribute name="createts" attributeType="Date">
+            <userInfo/>
+        </attribute>
+        <attribute name="eventid" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="param1" optional="YES" attributeType="String" maxValueString="100" syncable="YES"/>
+        <attribute name="param2" optional="YES" attributeType="String" maxValueString="100" syncable="YES"/>
+        <attribute name="param3" optional="YES" attributeType="String" maxValueString="100" syncable="YES"/>
+        <attribute name="picture" optional="YES" attributeType="Binary" syncable="YES"/>
+    </entity>
+    <entity name="Commit" representedClassName="Commit" syncable="YES">
+        <attribute name="createts" attributeType="Date" syncable="YES"/>
+        <attribute name="message" attributeType="String" maxValueString="1024" syncable="YES"/>
+        <attribute name="parentobjectid" optional="YES" attributeType="String" maxValueString="256" syncable="YES"/>
+        <attribute name="payloadobjectid" optional="YES" attributeType="String" maxValueString="256" syncable="YES"/>
+        <relationship name="newvault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="newcommit" inverseEntity="Vault" syncable="YES"/>
+        <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="commit" inverseEntity="Vault" syncable="YES"/>
+    </entity>
+    <entity name="Key" representedClassName="Key" syncable="YES">
+        <attribute name="iv" attributeType="String" maxValueString="100" syncable="YES"/>
+        <attribute name="payloadalgorithm" attributeType="String" maxValueString="32" syncable="YES"/>
+        <attribute name="payloadiv" attributeType="String" maxValueString="100" syncable="YES"/>
+        <attribute name="payloadkey" attributeType="Binary" syncable="YES"/>
+        <relationship name="password" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Password" inverseName="keys" inverseEntity="Password" syncable="YES"/>
+    </entity>
+    <entity name="Password" representedClassName="Password" syncable="YES">
+        <attribute name="createts" attributeType="Date" syncable="YES"/>
+        <attribute name="kdf" attributeType="String" maxValueString="32" syncable="YES"/>
+        <attribute name="kdfparam" optional="YES" attributeType="String" maxValueString="100" syncable="YES"/>
+        <attribute name="lockcount" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="locktimestamp" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="maxtries" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="passwordsalt" optional="YES" attributeType="String" maxValueString="100" syncable="YES"/>
+        <attribute name="passwordtype" optional="YES" attributeType="String" maxValueString="32" syncable="YES"/>
+        <attribute name="paswordlength" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="tries" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="wrongpasswordtrategy" attributeType="String" maxValueString="32" syncable="YES"/>
+        <relationship name="keys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Key" inverseName="password" inverseEntity="Key" syncable="YES"/>
+    </entity>
+    <entity name="Payload" representedClassName="Payload" syncable="YES">
+        <attribute name="createts" optional="YES" attributeType="Date" syncable="YES"/>
+        <attribute name="encryptedpayload" optional="YES" attributeType="Binary" syncable="YES"/>
+        <attribute name="keyobjectid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="vaultobjectid" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Vault" representedClassName="Vault" syncable="YES">
+        <attribute name="vaultname" attributeType="String" syncable="YES"/>
+        <attribute name="vaulttype" optional="YES" attributeType="String" maxValueString="32" syncable="YES"/>
+        <relationship name="commit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Commit" inverseName="vault" inverseEntity="Commit" syncable="YES"/>
+        <relationship name="newcommit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Commit" inverseName="newvault" inverseEntity="Commit" syncable="YES"/>
+    </entity>
+    <configuration name="Data">
+        <memberEntity name="Audit"/>
+        <memberEntity name="Commit"/>
+        <memberEntity name="Payload"/>
+        <memberEntity name="Vault"/>
+    </configuration>
+    <configuration name="Keys">
+        <memberEntity name="Key"/>
+        <memberEntity name="Password"/>
+    </configuration>
+    <elements>
+        <element name="Audit" positionX="43" positionY="162" width="128" height="133"/>
+        <element name="Commit" positionX="-470" positionY="-99" width="128" height="133"/>
+        <element name="Key" positionX="-110" positionY="-115" width="128" height="118"/>
+        <element name="Password" positionX="133" positionY="-223" width="128" height="223"/>
+        <element name="Payload" positionX="-299" positionY="-99" width="128" height="103"/>
+        <element name="Vault" positionX="-657" positionY="-54" width="128" height="103"/>
+    </elements>
+</model>

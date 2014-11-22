@@ -1,0 +1,4 @@
+#!/bin/sh
+
+sqlite3 tresor-data.sqlite "select hex(zencryptedpayload) from zpayload where z_pk=$1" | awk '{ for(i=length;i!=0;i-=2)x=x substr($0,i-1,2);}END{print x}' | xxd -r -p | hexdump -C
+
