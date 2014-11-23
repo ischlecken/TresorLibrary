@@ -86,28 +86,7 @@
   if (self)
   { NSArray* udd =
     @[
-#if TKR_PRODUCTION_ENVIRONMENT
-       [UserDefaultDesc userDefaultDescWithKeyName:@"hostName"             andDefaultValue:@"tankradar.info"],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"port"                 andDefaultValue:[NSNumber numberWithInteger:443]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"secureConnection"     andDefaultValue:[NSNumber numberWithBool:YES]],
-#else
-       [UserDefaultDesc userDefaultDescWithKeyName:@"hostName"             andDefaultValue:@"planck.varetis.de"],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"port"                 andDefaultValue:[NSNumber numberWithInteger:22212]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"secureConnection"     andDefaultValue:[NSNumber numberWithBool:YES]],
-#endif
-       [UserDefaultDesc userDefaultDescWithKeyName:@"logConnection"        andDefaultValue:[NSNumber numberWithBool:NO]],
-
-       [UserDefaultDesc userDefaultDescWithKeyName:@"pageSize"             andDefaultValue:[NSNumber numberWithInteger:20]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"radiusInMeter"        andDefaultValue:[NSNumber numberWithInteger:5000]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"distanceFilter"       andDefaultValue:[NSNumber numberWithInteger:1000]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"pushNotification"     andDefaultValue:[NSNumber numberWithBool:YES]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"apnsDeviceToken"      andDefaultValue:nil],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"locationUpdate"       andDefaultValue:[NSNumber numberWithBool:YES]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"simpleUI"             andDefaultValue:[NSNumber numberWithBool:NO]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"radarAnimation"       andDefaultValue:[NSNumber numberWithBool:YES]],
        [UserDefaultDesc userDefaultDescWithKeyName:@"colorScheme"          andDefaultValue:[NSNumber numberWithInteger:0]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"lastSearch"           andDefaultValue:nil],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"sortCriteria"         andDefaultValue:[NSNumber numberWithInteger:0]],
        [UserDefaultDesc userDefaultDescWithKeyName:@"listViewHelpStatus"   andDefaultValue:[NSNumber numberWithInteger:0]],
        [UserDefaultDesc userDefaultDescWithKeyName:@"detailViewHelpStatus" andDefaultValue:[NSNumber numberWithInteger:0]],
        [UserDefaultDesc userDefaultDescWithKeyName:@"walkthroughShowed"    andDefaultValue:[NSNumber numberWithBool:NO]],
@@ -119,17 +98,9 @@
       [udd1 setObject:u forKey:u.keyName];
     
     self.userDefaultDescription = udd1;
-    
     self.userDefaults = [[NSMutableDictionary alloc] initWithCapacity:udd.count];
     
     [self registerUserDefaults];
-    
-    self.icloudId = [[NSFileManager defaultManager] ubiquityIdentityToken];
-    
-    _NSLOG(@"icloudId=%@",self.icloudId);
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(iCloudAccountAvailabilityChanged:) name:NSUbiquityIdentityDidChangeNotification object: nil];
-    
   } /* of if */
   
   return self;
@@ -197,82 +168,6 @@
 /**
  *
  */
--(NSString*) hostName
-{ return [self getConfigValue:@"hostName"]; }
-
-/**
- *
- */
--(void) setHostName:(NSString *)value
-{ [self setConfigValue:value forKey:@"hostName"]; }
-
-/**
- *
- */
--(NSString*) apnsDeviceToken
-{ return [self getConfigValue:@"apnsDeviceToken"]; }
-
-/**
- *
- */
--(void) setApnsDeviceToken:(NSString *)value
-{ [self setConfigValue:value forKey:@"apnsDeviceToken"]; }
-
-
-/**
- *
- */
--(NSInteger) port
-{ NSNumber* result = [self getConfigValue:@"port"]; return [result integerValue]; }
-
-/**
- *
- */
--(void) setPort:(NSInteger)value
-{ [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"port"]; }
-
-
-/**
- *
- */
--(NSInteger) pageSize
-{ NSNumber* result = [self getConfigValue:@"pageSize"]; return [result integerValue]; }
-
-/**
- *
- */
--(void) setPageSize:(NSInteger)value
-{ [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"pageSize"]; }
-
-
-/**
- *
- */
--(NSInteger) radiusInMeter
-{ NSNumber* result = [self getConfigValue:@"radiusInMeter"]; return [result integerValue]; }
-
-/**
- *
- */
--(void) setRadiusInMeter:(NSInteger)value
-{ [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"radiusInMeter"]; }
-
-
-/**
- *
- */
--(NSInteger) distanceFilter
-{ NSNumber* result = [self getConfigValue:@"distanceFilter"]; return [result integerValue]; }
-
-/**
- *
- */
--(void) setDistanceFilter:(NSInteger)value
-{ [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"distanceFilter"]; }
-
-/**
- *
- */
 -(NSInteger) colorScheme
 { NSNumber* result = [self getConfigValue:@"colorScheme"]; return [result integerValue]; }
 
@@ -281,36 +176,6 @@
  */
 -(void) setColorScheme:(NSInteger)value
 { [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"colorScheme"]; }
-
-/**
- *
- */
--(NSString*) lastSearch
-{ NSString* result = [self getConfigValue:@"lastSearch"]; return result; }
-
-/**
- *
- */
--(void) setLastSearch:(NSString*)value
-{ [self setConfigValue:value forKey:@"lastSearch"]; }
-
-/**
- *
- */
--(NSInteger) sortCriteria
-{ NSNumber* result = [self getConfigValue:@"sortCriteria"]; return [result integerValue]; }
-
-/**
- *
- */
--(void) setSortCriteria:(NSInteger)value
-{ [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"sortCriteria"]; }
-
-/**
- *
- */
--(NSInteger) listViewHelpStatus
-{ NSNumber* result = [self getConfigValue:@"listViewHelpStatus"]; return [result integerValue]; }
 
 /**
  *
@@ -331,67 +196,6 @@
 -(void) setDetailViewHelpStatus:(NSInteger)value
 { [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"detailViewHelpStatus"]; }
 
-
-/**
- *
- */
--(BOOL) secureConnection
-{ NSNumber* result = [self getConfigValue:@"secureConnection"]; return [result boolValue]; }
-
-/**
- *
- */
--(void) setSecureConnection:(BOOL)value
-{ [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"secureConnection"]; }
-
-/**
- *
- */
--(BOOL) logConnection
-{ NSNumber* result = [self getConfigValue:@"logConnection"]; return [result boolValue]; }
-
-/**
- *
- */
--(void) setLogConnection:(BOOL)value
-{ [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"logConnection"]; }
-
-
-/**
- *
- */
--(BOOL) locationUpdate
-{ NSNumber* result = [self getConfigValue:@"locationUpdate"]; return [result boolValue]; }
-
-/**
- *
- */
--(void) setLocationUpdate:(BOOL)value
-{ [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"locationUpdate"]; }
-
-/**
- *
- */
--(BOOL) simpleUI
-{ NSNumber* result = [self getConfigValue:@"simpleUI"]; return [result boolValue]; }
-
-/**
- *
- */
--(void) setSimpleUI:(BOOL)value
-{ [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"simpleUI"]; }
-
-/**
- *
- */
--(BOOL) radarAnimation
-{ NSNumber* result = [self getConfigValue:@"radarAnimation"]; return [result boolValue]; }
-
-/**
- *
- */
--(void) setRadarAnimation:(BOOL)value
-{ [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"radarAnimation"]; }
 
 
 /**
@@ -420,19 +224,6 @@
 -(void) setUseCloud:(BOOL)value
 { [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"useCloud"]; }
 
-
-
-/**
- *
- */
--(BOOL) pushNotification
-{ NSNumber* result = [self getConfigValue:@"pushNotification"]; return [result boolValue]; }
-
-/**
- *
- */
--(void) setPushNotification:(BOOL)value
-{ [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"pushNotification"]; }
 
 #if 0
 
@@ -490,133 +281,14 @@
 /**
  *
  */
-+(NSString*) appBaseURL
-{ return [NSString stringWithFormat:@"%@://",kAppBaseURLScheme]; }
++(NSURL*) databaseStoreURL
+{ return [[self.class applicationDocumentsDirectory] URLByAppendingPathComponent:@"tresor.sqlite"]; }
 
 /**
  *
  */
-+(NSString*) appLandingPageURL:(NSString *)landingURL withCommand:(NSString*)cmd
-{ return [NSString stringWithFormat:@"%@%@/%@",[self.class appBaseURL],cmd,landingURL]; }
-
-/**
- *
- */
-+(NSString*) appOpenLandingPageURL:(NSString *)landingURL
-{ return [self appLandingPageURL:landingURL withCommand:@"open"]; }
-
-/**
- *
- */
--(NSString*) baseURL
-{ NSString* host   = self.hostName;
-  NSInteger port   = self.port;
-  BOOL      secure = self.secureConnection;
-  NSString* scheme = secure ? @"https" : @"http";
-  
-  return [NSString stringWithFormat:@"%@://%@:%ld/",scheme,host,(long)port];
-}
-
-
-/**
- *
- */
--(NSString*) landingPageURL:(NSString *)landingURL
-{ return [NSString stringWithFormat:@"%@%@",[self baseURL],landingURL]; }
-
-
-/**
- *
- */
--(NSString*) imageURL:(NSString *)imageName
-{ return [NSString stringWithFormat:@"%@%@/%@",[self baseURL],kUserDynamicPanelUrl,imageName]; }
-
-
-/**
- *
- */
--(NSString*) restFavoriteListPath
-{ return [NSString stringWithFormat:@"%@/%@",kUserDefaultRestUrlPrefix,kUserFavoritesRestUrlPrefix]; }
-
-/**
- *
- */
--(NSString*) restQueryPath:(NSString*)path
-{ return [NSString stringWithFormat:@"%@/%@",kUserDefaultRestUrlPrefix,path]; }
-
-/**
- *
- */
--(NSString*) restFavoritesPath
-{ return [NSString stringWithFormat:@"%@/%@",kUserDefaultRestUrlPrefix,kUserLandingPagesRestUrlPrefix]; }
-
-
-/**
- *
- */
--(NSString*) restComplaintPath
-{ return [NSString stringWithFormat:@"%@/%@",kUserDefaultRestUrlPrefix,kUserComplaintRestUrlPrefix]; }
-
-/**
- *
- */
--(NSString*) autocompleteURL
-{ return [NSString stringWithFormat:@"%@/%@",kUserDefaultRestUrlPrefix,kUserDefaultAutocompletePrefix]; }
-
-
-/**
- *
- */
--(NSString*) statisticsURL:(NSString*)landingPageURL
-{ return [NSString stringWithFormat:@"%@/%@/%@",kUserDefaultRestUrlPrefix,kUserDefaultStatisticsPrefix,landingPageURL]; }
-
-/**
- *
- */
--(NSString*) tkrURL:(NSURL*)url
-{ return [NSString stringWithFormat:@"%@%@",kUserDefaultRestUrlPrefix,url.path]; }
-
-/**
- *
- */
--(NSString*) restCheckChangesPath
-{ return [NSString stringWithFormat:@"%@/%@",kUserDefaultRestUrlPrefix,kUserLandingPagesRestUrlPrefix]; }
-
-
-/**
- *
- */
-+(BOOL) isAppURLScheme:(NSString*)scheme
-{ return [scheme isEqualToString:kAppBaseURLScheme]; }
-
-
-/**
- *
- */
-+(NSURL*) keysDatabaseStoreURL
-{ return [[self.class applicationDocumentsDirectory] URLByAppendingPathComponent:@"tresor-keys.sqlite"]; }
-
-/**
- *
- */
-+(NSURL*) dataDatabaseStoreURL
-{ return [[self.class applicationDocumentsDirectory] URLByAppendingPathComponent:@"tresor-data.sqlite"]; }
-
-/**
- *
- */
-+(BOOL) keysDatabaseStoreExists
-{ NSURL* url    = [self.class keysDatabaseStoreURL];
-  BOOL   result = [[NSFileManager defaultManager] fileExistsAtPath:[url path]];
-  
-  return result;
-}
-
-/**
- *
- */
-+(BOOL) dataDatabaseStoreExists
-{ NSURL* url    = [self.class dataDatabaseStoreURL];
++(BOOL) databaseStoreExists
+{ NSURL* url    = [self.class databaseStoreURL];
   BOOL   result = [[NSFileManager defaultManager] fileExistsAtPath:[url path]];
   
   return result;
@@ -688,7 +360,7 @@
   
   [NSUserDefaults standardUserDefaults];
   
-  if( self.iCloudAvailable )
+#if 0
   { NSUbiquitousKeyValueStore* defaults = [NSUbiquitousKeyValueStore defaultStore];
     
     NSDictionary* content = [defaults dictionaryRepresentation];
@@ -698,6 +370,7 @@
     
     [defaults synchronize];
   } /* of if */
+#endif
   
   self.userDefaults = [[NSMutableDictionary alloc] initWithCapacity:self.userDefaultDescription.count];
 }
@@ -706,6 +379,7 @@
 /**
  *
  */
+#if 0
 -(NSString*) userId
 { if( _userId==nil && self.iCloudAvailable )
   { NSUbiquitousKeyValueStore* defaults = [NSUbiquitousKeyValueStore defaultStore];
@@ -738,22 +412,35 @@
   
   return _userId;
 }
+#endif
 
+#pragma mark Info
 
-
-
-/*
+/**
  *
  */
--(void) iCloudAccountAvailabilityChanged:(NSNotification *)note
-{ _NSLOG_SELECTOR;
+-(NSString*) appName
+{ NSDictionary* localizedInfo    = [[NSBundle bundleForClass:[self class]] localizedInfoDictionary];
   
-  self.icloudId = [[NSFileManager defaultManager] ubiquityIdentityToken];
+  return localizedInfo[@"CFBundleDisplayName"];
 }
 
 /**
  *
  */
--(BOOL) iCloudAvailable
-{ return self.icloudId!=nil; }
+-(NSString*) appVersion
+{ NSDictionary* info             = [[NSBundle bundleForClass:[self class]] infoDictionary];
+  
+  return info[@"CFBundleShortVersionString"];
+}
+
+/**
+ *
+ */
+-(NSString*) appBuild
+{ NSDictionary* info             = [[NSBundle bundleForClass:[self class]] infoDictionary];
+  
+  return info[@"CFBundleVersion"];
+}
+
 @end

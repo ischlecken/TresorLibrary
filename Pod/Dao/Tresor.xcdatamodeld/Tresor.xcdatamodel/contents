@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="5064" systemVersion="13E28" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6252" systemVersion="14B25" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Audit" representedClassName="Audit" syncable="YES">
         <attribute name="createts" attributeType="Date">
             <userInfo/>
@@ -51,16 +51,6 @@
         <relationship name="commit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Commit" inverseName="vault" inverseEntity="Commit" syncable="YES"/>
         <relationship name="newcommit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Commit" inverseName="newvault" inverseEntity="Commit" syncable="YES"/>
     </entity>
-    <configuration name="Data">
-        <memberEntity name="Audit"/>
-        <memberEntity name="Commit"/>
-        <memberEntity name="Payload"/>
-        <memberEntity name="Vault"/>
-    </configuration>
-    <configuration name="Keys">
-        <memberEntity name="Key"/>
-        <memberEntity name="Password"/>
-    </configuration>
     <elements>
         <element name="Audit" positionX="43" positionY="162" width="128" height="133"/>
         <element name="Commit" positionX="-470" positionY="-99" width="128" height="133"/>

@@ -43,18 +43,6 @@ return [_MOC save:error] ? result : nil; \
 if( error ) *error=nil; \
 
 
-@protocol TresorModelDelegate <NSObject>
--(BOOL)   useCloud;
--(id)     icloudId;
-
--(BOOL)   iCloudAvailable;
--(NSURL*) keysDatabaseStoreURL;
--(BOOL)   keysDatabaseStoreExists;
--(NSURL*) dataDatabaseStoreURL;
--(BOOL)   dataDatabaseStoreExists;
-@end
-
-
 @interface TresorModel : NSObject
 
 @property(readonly, strong, nonatomic) NSManagedObjectContext*       managedObjectContext;
@@ -63,16 +51,13 @@ if( error ) *error=nil; \
 @property(readonly, strong, nonatomic) NSPersistentStoreCoordinator* persistentStoreCoordinator;
 @property(readonly, strong, nonatomic) NSSet*                        vaultsInEditMode;
 @property(readonly, strong, nonatomic) dispatch_queue_t              cryptionQueue;
-@property(          weak  , nonatomic) id<TresorModelDelegate>       delegate;
 
 
 +(instancetype)            sharedInstance;
 -(void)                    reloadModels;
 -(void)                    resetCoreDataObjects;
--(BOOL)                    addLocalSQLiteStoreWithURL:(NSURL*)storeURL usingConfiguration:(NSString*)configuration toPersistentStoreCoordinator:(NSPersistentStoreCoordinator*)psc;
--(BOOL)                    addCloudSQLiteStoreWithURL:(NSURL*)storeURL usingConfiguration:(NSString*)configuration toPersistentStoreCoordinator:(NSPersistentStoreCoordinator*)psc;
 -(NSManagedObjectContext*) createTemporaryManagedObjectContext;
 
--(BOOL)         isVaultInEditMode:(Vault*)vault;
--(void)         editMode:(BOOL)enable forVault:(Vault*)vault;
+-(BOOL)                    isVaultInEditMode:(Vault*)vault;
+-(void)                    editMode:(BOOL)enable forVault:(Vault*)vault;
 @end

@@ -19,11 +19,14 @@
 #import "TresorModel.h"
 #import "TresorUtilError.h"
 #import "TresorDaoCategories.h"
+#import "TresorConfig.h"
 
 #pragma mark - TresorModel
 
 @interface TresorModel ()
 { NSMutableSet* _vaultsInEditMode;
+  NSURL*        _ubiquityContainerURL;
+
 }
 @end
 
@@ -119,37 +122,32 @@
 { if( _persistentStoreCoordinator==nil )
   { _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
   
-    if( [self.delegate iCloudAvailable] && [self.delegate useCloud] )
-    { NSPersistentStoreCoordinator* psc = _persistentStoreCoordinator;
-      
-      BOOL result = [self addLocalSQLiteStoreWithURL:[self.delegate keysDatabaseStoreURL] usingConfiguration:@"Keys" toPersistentStoreCoordinator:_persistentStoreCoordinator];
-      
-      // to download preexisting iCloud content
-      if( result )
-      { [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(storesWillChange:)
-                                                     name:NSPersistentStoreCoordinatorStoresWillChangeNotification
-                                                   object:psc];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(storesDidChange:)
-                                                     name:NSPersistentStoreCoordinatorStoresDidChangeNotification
-                                                   object:psc];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(persistentStoreDidImportUbiquitousContentChanges:)
-                                                     name:NSPersistentStoreDidImportUbiquitousContentChangesNotification
-                                                   object:psc];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(storesWillChange:)
+                                                 name:NSPersistentStoreCoordinatorStoresWillChangeNotification
+                                               object:_persistentStoreCoordinator];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(storesDidChange:)
+                                                 name:NSPersistentStoreCoordinatorStoresDidChangeNotification
+                                               object:_persistentStoreCoordinator];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(persistentStoreDidImportUbiquitousContentChanges:)
+                                                 name:NSPersistentStoreDidImportUbiquitousContentChangesNotification
+                                               object:_persistentStoreCoordinator];
 
-        [self addCloudSQLiteStoreWithURL:[self.delegate dataDatabaseStoreURL] usingConfiguration:@"Data" toPersistentStoreCoordinator:psc];
-      } /* of if */
-    } /* of if */
-    else
-    { BOOL result = YES; // [self addLocalSQLiteStoreWithURL:[self.delegate keysDatabaseStoreURL] usingConfiguration:@"Keys" toPersistentStoreCoordinator:_persistentStoreCoordinator];
-      
-      if( result )
-        result = [self addLocalSQLiteStoreWithURL:[self.delegate dataDatabaseStoreURL] usingConfiguration:nil toPersistentStoreCoordinator:_persistentStoreCoordinator];
-    } /* of else */
+    if( _TRESORCONFIG.useCloud )
+      [self ubiquityContainerURL:^(BOOL available, NSURL *url)
+       { _NSLOG(@"ubiquityURL:%@ add icloud store",url);
+         
+         if( available && url!=nil )
+           [self addCloudSQLiteStoreWithURL:[TresorConfig databaseStoreURL] usingConfiguration:nil forUbiquityURL:url toPersistentStoreCoordinator:_persistentStoreCoordinator];
+         else
+           [self addSQLiteStoreWithURL:[TresorConfig databaseStoreURL] usingConfiguration:nil toPersistentStoreCoordinator:_persistentStoreCoordinator];
+       }];
+     else
+       [self addSQLiteStoreWithURL:[TresorConfig databaseStoreURL] usingConfiguration:nil toPersistentStoreCoordinator:_persistentStoreCoordinator];
   } /* of if */
   
   return _persistentStoreCoordinator;
@@ -160,46 +158,68 @@
 /**
  *
  */
--(BOOL) addLocalSQLiteStoreWithURL:(NSURL*)storeURL usingConfiguration:(NSString*)configuration toPersistentStoreCoordinator:(NSPersistentStoreCoordinator*)psc
-{ NSError*           error    = nil;
-  NSDictionary*      options  = @{ NSMigratePersistentStoresAutomaticallyOption : [NSNumber numberWithBool:YES],
-                                   NSInferMappingModelAutomaticallyOption       : [NSNumber numberWithBool:YES]
+-(BOOL) addSQLiteStoreWithURL:(NSURL*)storeURL usingConfiguration:(NSString*)configuration toPersistentStoreCoordinator:(NSPersistentStoreCoordinator*)psc
+{ BOOL __block       result   = NO;
+  
+  [psc performBlockAndWait:^
+  { NSDictionary*      options  = @{ NSMigratePersistentStoresAutomaticallyOption : [NSNumber numberWithBool:YES],
+                                     NSInferMappingModelAutomaticallyOption       : [NSNumber numberWithBool:YES]
                                    };
-  NSPersistentStore* ps       = [psc addPersistentStoreWithType:NSSQLiteStoreType
-                                                  configuration:configuration
-                                                            URL:storeURL
-                                                        options:options
-                                                          error:&error];
+    NSError*           error    = nil;
   
-  //if( ps==nil && [error.domain isEqualToString:NSCocoaErrorDomain] && error.code==NSPersistentStoreIncompatibleVersionHashError )
+    result = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:configuration URL:storeURL options:options error:&error]!=nil;
+ 
+    addToErrorList(@"addSQLiteStoreWithURL failed", error, AddErrorAlert);
+  }];
   
-  addToErrorList(@"addLocalSQLiteStoreWithURL failed", error, AddErrorAlert);
-  
-  return ps!=nil;
+  return result;
 }
 
 
 /**
  *
  */
--(BOOL) addCloudSQLiteStoreWithURL:(NSURL*)storeURL usingConfiguration:(NSString*)configuration toPersistentStoreCoordinator:(NSPersistentStoreCoordinator*)psc
-{ NSError*       error                = nil;
-  NSURL*         transactionLogsURL   = [[NSFileManager defaultManager] URLForUbiquityContainerIdentifier:nil];
-  NSString*      coreDataCloudContent = [[transactionLogsURL path] stringByAppendingPathComponent:@"CoreDataLogs"];
-  NSDictionary*  options              = @{ NSPersistentStoreUbiquitousContentNameKey    : @"tresor",
-                                           NSPersistentStoreUbiquitousContentURLKey     : [NSURL fileURLWithPath:coreDataCloudContent],
-                                           NSMigratePersistentStoresAutomaticallyOption : [NSNumber numberWithBool:YES]
-                                         };
+-(BOOL) addCloudSQLiteStoreWithURL:(NSURL*)storeURL usingConfiguration:(NSString*)configuration forUbiquityURL:(NSURL*)ubiquityURL toPersistentStoreCoordinator:(NSPersistentStoreCoordinator*)psc
+{ BOOL __block       result   = NO;
   
-  //[psc lock];
-  BOOL result = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:configuration URL:storeURL options:options error:&error]!=nil;
-  //[psc unlock];
-  
-  if( !result )
+  [psc performBlockAndWait:^
+  { NSError*       error                = nil;
+    NSURL*         transactionLogsURL   = ubiquityURL;
+    NSString*      coreDataCloudContent = [[transactionLogsURL path] stringByAppendingPathComponent:@"CoreDataLogs"];
+    NSDictionary*  options              = @{ NSPersistentStoreUbiquitousContentNameKey    : @"tresor",
+                                             NSPersistentStoreUbiquitousContentURLKey     : [NSURL fileURLWithPath:coreDataCloudContent],
+                                             NSMigratePersistentStoresAutomaticallyOption : [NSNumber numberWithBool:YES]
+                                           };
+    
+    result = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:configuration URL:storeURL options:options error:&error]!=nil;
+    
     addToErrorList(@"addCloudSQLiteStoreWithName failed", error, AddErrorNothing);
+  }];
   
   return result;
 }
+
+/**
+ *
+ */
+-(NSURL*) ubiquityContainerURL:(void (^)(BOOL available,NSURL* url))completion
+{ if( _ubiquityContainerURL==nil )
+  dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
+                 { _ubiquityContainerURL = [[NSFileManager defaultManager] URLForUbiquityContainerIdentifier:nil];
+                   
+                   _NSLOG(@"ubiquityContainerURL:%@",_ubiquityContainerURL);
+                   
+                   BOOL iCloudAvailable = _ubiquityContainerURL!=nil ;
+                   
+                   dispatch_async(dispatch_get_main_queue(), ^
+                                  { completion(iCloudAvailable,_ubiquityContainerURL);
+                                  });
+                   
+                 });
+  
+  return _ubiquityContainerURL;
+}
+
 
 
 /**
@@ -215,13 +235,12 @@
     moc.parentContext = [self writerManagedObjectContext];
 #endif
     
-    if( [self.delegate iCloudAvailable] && [self.delegate useCloud] )
-      [moc performBlockAndWait:
-       ^{
-         // configure context properties
-         [moc setMergePolicy:[[NSMergePolicy alloc] initWithMergeType:NSMergeByPropertyObjectTrumpMergePolicyType] ];
-       }];
-        
+    [moc performBlockAndWait:
+     ^{
+       // configure context properties
+       [moc setMergePolicy:[[NSMergePolicy alloc] initWithMergeType:NSMergeByPropertyObjectTrumpMergePolicyType] ];
+     }];
+    
     _managedObjectContext = moc;
   } /* of if */
   

@@ -19,17 +19,6 @@
 #ifndef TRESORDEFAULTS_H
 #define TRESORDEFAULTS_H
 
-#define kUserDefaultRestUrlPrefix         @"restv1"
-#define kUserDefaultAutocompletePrefix    @"autocomplete"
-#define kUserDefaultStatisticsPrefix      @"statistics"
-#define kUserLandingPagesRestUrlPrefix    @"landingpages"
-#define kUserFavoritesRestUrlPrefix       @"favorites"
-#define kUserComplaintRestUrlPrefix       @"complaint"
-
-#define kUserDynamicPanelUrl              @"wicket/resource/net.voltdelta.tslp.panel.DynamicPanel"
-
-#define kAppBaseURLScheme                 @"tkr"
-
 #define kAppUniqueUserId    @"unique-userid"
 #define kAppKeyChainService @"tresor"
 

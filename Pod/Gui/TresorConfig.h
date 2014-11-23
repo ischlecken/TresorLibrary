@@ -19,63 +19,22 @@
 #define _TRESORCONFIG [TresorConfig sharedInstance]
 
 @interface TresorConfig : NSObject
-
-
-@property(          strong, nonatomic) NSString*    hostName;
-@property(          assign, nonatomic) NSInteger    port;
-@property(          assign, nonatomic) BOOL         secureConnection;
-@property(          assign, nonatomic) NSInteger    pageSize;
-@property(          assign, nonatomic) NSInteger    radiusInMeter;
-@property(          assign, nonatomic) BOOL         logConnection;
-
-@property(          assign, nonatomic) BOOL         locationUpdate;
-@property(          assign, nonatomic) NSInteger    distanceFilter;
-
 @property(          assign, nonatomic) NSInteger    colorScheme;
-@property(          strong, nonatomic) NSString*    lastSearch;
-@property(          assign, nonatomic) NSInteger    sortCriteria;
-
-@property(          assign, nonatomic) BOOL         simpleUI;
-@property(          assign, nonatomic) BOOL         radarAnimation;
-@property(          assign, nonatomic) BOOL         walkthroughShowed;
-
 @property(          assign, nonatomic) BOOL         useCloud;
-@property(          strong, nonatomic) id           icloudId;
-
+@property(          assign, nonatomic) BOOL         walkthroughShowed;
 @property(          assign, nonatomic) NSInteger    listViewHelpStatus;
 @property(          assign, nonatomic) NSInteger    detailViewHelpStatus;
 
-@property(          strong, nonatomic) NSString*    apnsDeviceToken;
-@property(          assign, nonatomic) BOOL         pushNotification;
-@property(readonly, strong, nonatomic) NSString*    userId;
+@property(readonly ,strong, nonatomic) NSString*    appName;
+@property(readonly ,strong, nonatomic) NSString*    appVersion;
+@property(readonly ,strong, nonatomic) NSString*    appBuild;
 
-+(NSURL*)                        applicationDocumentsDirectory;
-+(NSString*)                     appBaseURL;
-+(NSString*)                     appLandingPageURL:(NSString *)landingURL withCommand:(NSString*)cmd;
-+(NSString*)                     appOpenLandingPageURL:(NSString *)landingURL;
--(NSString*)                     baseURL;
--(NSString*)                     landingPageURL:(NSString*)landingURL;
--(NSString*)                     restFavoriteListPath;
--(NSString*)                     restCheckChangesPath;
--(NSString*)                     autocompleteURL;
--(NSString*)                     tkrURL:(NSURL*)url;
--(NSString*)                     statisticsURL:(NSString*)landingPageURL;
++(NSURL*)       applicationDocumentsDirectory;
+-(void)         resetUserDefaults;
 
--(NSString*)                     restQueryPath:(NSString*)path;
--(NSString*)                     restFavoritesPath;
--(NSString*)                     restComplaintPath;
--(NSString*)                     imageURL:(NSString *)imageName;
++(NSURL*)       databaseStoreURL;
++(BOOL)         databaseStoreExists;
 
--(void)                          resetUserDefaults;
--(BOOL)                          iCloudAvailable;
-
-+(BOOL)                          isAppURLScheme:(NSString*)scheme;
-
-+(NSURL*)                        keysDatabaseStoreURL;
-+(BOOL)                          keysDatabaseStoreExists;
-+(NSURL*)                        dataDatabaseStoreURL;
-+(BOOL)                          dataDatabaseStoreExists;
-
-+(instancetype)                  sharedInstance;
++(instancetype) sharedInstance;
 
 @end
