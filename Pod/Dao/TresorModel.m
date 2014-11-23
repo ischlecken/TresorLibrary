@@ -80,7 +80,6 @@
 -(void) resetCoreDataObjects
 { [_managedObjectContext reset];
   _managedObjectContext       = nil;
-  
   _managedObjectModel         = nil;
   
   if( _persistentStoreCoordinator )

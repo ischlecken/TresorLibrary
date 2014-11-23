@@ -17,6 +17,8 @@
 
 @property (nonatomic, retain) NSString* vaulttype;
 @property (nonatomic, retain) NSString* vaultname;
+@property (nonatomic, retain) NSData*   vaulticon;
+
 @property (nonatomic, retain) Commit*   commit;
 @property (nonatomic, retain) Commit*   newcommit;
 

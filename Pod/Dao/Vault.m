@@ -23,6 +23,7 @@
 
 @dynamic vaulttype;
 @dynamic vaultname;
+@dynamic vaulticon;
 @dynamic commit;
 @dynamic newcommit;
 

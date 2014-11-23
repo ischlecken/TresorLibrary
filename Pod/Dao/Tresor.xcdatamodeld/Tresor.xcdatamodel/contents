@@ -46,6 +46,7 @@
         <attribute name="vaultobjectid" optional="YES" attributeType="String" syncable="YES"/>
     </entity>
     <entity name="Vault" representedClassName="Vault" syncable="YES">
+        <attribute name="vaulticon" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="vaultname" attributeType="String" syncable="YES"/>
         <attribute name="vaulttype" optional="YES" attributeType="String" maxValueString="32" syncable="YES"/>
         <relationship name="commit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Commit" inverseName="vault" inverseEntity="Commit" syncable="YES"/>
@@ -57,6 +58,6 @@
         <element name="Key" positionX="-110" positionY="-115" width="128" height="118"/>
         <element name="Password" positionX="133" positionY="-223" width="128" height="223"/>
         <element name="Payload" positionX="-299" positionY="-99" width="128" height="103"/>
-        <element name="Vault" positionX="-657" positionY="-54" width="128" height="103"/>
+        <element name="Vault" positionX="-657" positionY="-54" width="128" height="118"/>
     </elements>
 </model>
