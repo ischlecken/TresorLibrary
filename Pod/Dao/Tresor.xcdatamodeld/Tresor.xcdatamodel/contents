@@ -32,9 +32,9 @@
         <attribute name="lockcount" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="locktimestamp" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="maxtries" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="passwordlength" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="passwordsalt" optional="YES" attributeType="String" maxValueString="100" syncable="YES"/>
         <attribute name="passwordtype" optional="YES" attributeType="String" maxValueString="32" syncable="YES"/>
-        <attribute name="paswordlength" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="tries" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="wrongpasswordtrategy" attributeType="String" maxValueString="32" syncable="YES"/>
         <relationship name="keys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Key" inverseName="password" inverseEntity="Key" syncable="YES"/>
@@ -56,7 +56,7 @@
         <element name="Audit" positionX="43" positionY="162" width="128" height="133"/>
         <element name="Commit" positionX="-470" positionY="-99" width="128" height="133"/>
         <element name="Key" positionX="-110" positionY="-115" width="128" height="118"/>
-        <element name="Password" positionX="133" positionY="-223" width="128" height="223"/>
+        <element name="Password" positionX="133" positionY="-223" width="128" height="225"/>
         <element name="Payload" positionX="-299" positionY="-99" width="128" height="103"/>
         <element name="Vault" positionX="-657" positionY="-54" width="128" height="118"/>
     </elements>

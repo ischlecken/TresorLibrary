@@ -21,7 +21,7 @@
 @property (nonatomic, retain) NSNumber * maxtries;
 @property (nonatomic, retain) NSString * passwordsalt;
 @property (nonatomic, retain) NSString * passwordtype;
-@property (nonatomic, retain) NSNumber * paswordlength;
+@property (nonatomic, retain) NSNumber * passwordlength;
 @property (nonatomic, retain) NSNumber * tries;
 @property (nonatomic, retain) NSString * wrongpasswordtrategy;
 @property (nonatomic, retain) NSSet *keys;

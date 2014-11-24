@@ -19,7 +19,7 @@
 @dynamic maxtries;
 @dynamic passwordsalt;
 @dynamic passwordtype;
-@dynamic paswordlength;
+@dynamic passwordlength;
 @dynamic tries;
 @dynamic wrongpasswordtrategy;
 @dynamic keys;
@@ -48,7 +48,7 @@
   result.maxtries               = [NSNumber numberWithInteger:5];
   result.passwordsalt           = @"1234";
   result.passwordtype           = @"pin";
-  result.paswordlength          = [NSNumber numberWithInteger:6];
+  result.passwordlength         = [NSNumber numberWithInteger:6];
   result.wrongpasswordtrategy   = @"lock";
   
   _MOC_SAVERETURN;
