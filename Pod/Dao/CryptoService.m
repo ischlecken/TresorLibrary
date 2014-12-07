@@ -23,6 +23,8 @@
 #import "JSONModel.h"
 #import "NSString+Date.h"
 #import "NSData+Crypto.h"
+#import "TresorUtilConstant.h"
+#import "NSString+Crypto.h"
 
 typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
 { CryptoServiceTagDummy=0,
@@ -224,7 +226,7 @@ typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
       result = decryptedPayloadKey
       .then(^(NSData* passwordKey)
       { NSError* error = nil;
-        Key*     key   = (Key*)[_MOC loadObjectWithObjectID:payload.keyobjectid andError:&error];
+        Key*     key   = [payload.keys anyObject];
         
         if( key==nil )
           return (id)error;
@@ -260,7 +262,7 @@ typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
     result = decryptedPayloadKey
     .then(^(NSData* passwordKey)
     { NSError* error = nil;
-      Key*     key   = (Key*)[_MOC loadObjectWithObjectID:payload.keyobjectid andError:&error];
+      Key*     key   = [payload.keys anyObject];
       
       if( key==nil )
         return (id)error;

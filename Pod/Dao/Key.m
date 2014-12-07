@@ -7,18 +7,18 @@
 //
 
 #import "Key.h"
-#import "Password.h"
 #import "Payload.h"
 #import "TresorUtilConstant.h"
 #import "NSString+Crypto.h"
 
 @implementation Key
 
-@dynamic iv;
-@dynamic payloadalgorithm;
-@dynamic payloadiv;
-@dynamic payloadkey;
-@dynamic password;
+@dynamic createts;
+@dynamic cryptoalgorithm;
+@dynamic cryptoiv;
+@dynamic encryptedkey;
+@dynamic authentication;
+@dynamic payload;
 
 #pragma mark dao extension
 
@@ -35,13 +35,13 @@
 /**
  *
  */
-+(Key*) keyWithIV:(NSString*)iv andPayloadKey:(NSData*)payloadKey andPayloadIV:(NSString*)payloadIV andPayloadAlgorith:(NSString*)payloadAlgorithm andError:(NSError**)error
++(Key*) keyWithEncryptedKey:(NSData*)encryptedKey andCryptoIV:(NSString*)cryptoIV andCryptoAlgorith:(NSString*)cryptoAlgorithm andError:(NSError**)error
 { Key* result = [NSEntityDescription insertNewObjectForEntityForName:@"Key" inManagedObjectContext:_MOC];
   
-  result.iv               = iv;
-  result.payloadkey       = payloadKey;
-  result.payloadiv        = payloadIV;
-  result.payloadalgorithm = payloadAlgorithm;
+  result.createts        = [NSDate date];
+  result.encryptedkey    = encryptedKey;
+  result.cryptoiv        = cryptoIV;
+  result.cryptoalgorithm = cryptoAlgorithm;
   
   _MOC_SAVERETURN;
 }
@@ -50,17 +50,17 @@
 /**
  *
  */
-+(Key*) keyWithRandomKey:(NSData*)passwordKey andError:(NSError**)error
++(Key*) keyWithRandomKey:(NSData*)passwordKey andKeySize:(NSUInteger)keySize andError:(NSError**)error
 { Key* result = [NSEntityDescription insertNewObjectForEntityForName:@"Key" inManagedObjectContext:_MOC];
   
   VaultAlgorithmT vat          = vaultAES256;
   AlgorithmInfoT  vai          = VaultAlgorithmInfo[vat];
-  NSData*         decryptedKey = [NSData dataWithRandom:vai.keySize];
+  NSData*         decryptedKey = [NSData dataWithRandom:keySize];
   
-  result.iv                = [[NSData dataWithRandom:vai.blockSize] hexStringValue];
-  result.payloadiv         = [[NSData dataWithRandom:vai.blockSize] hexStringValue];
-  result.payloadalgorithm  = VaultAlgorithmString[vat];
-  result.payloadkey        = [decryptedKey encryptWithAlgorithm:vai.cryptoAlgorithm usingKey:passwordKey andIV:[result.iv hexString2RawValue] error:error];
+  result.createts         = [NSDate date];
+  result.cryptoiv         = [[NSData dataWithRandom:vai.blockSize] hexStringValue];
+  result.cryptoalgorithm  = VaultAlgorithmString[vat];
+  result.encryptedkey     = [decryptedKey encryptWithAlgorithm:vai.cryptoAlgorithm usingKey:passwordKey andIV:[result.cryptoiv hexString2RawValue] error:error];
   
   _MOC_SAVERETURN;
 }

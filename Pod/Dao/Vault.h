@@ -15,6 +15,9 @@
 
 @interface Vault : NSManagedObject <Visit>
 
+@property (nonatomic, retain) NSDate*   createts;
+@property (nonatomic, retain) NSDate*   modifyts;
+
 @property (nonatomic, retain) NSString* vaulttype;
 @property (nonatomic, retain) NSString* vaultname;
 @property (nonatomic, retain) NSData*   vaulticon;
@@ -22,13 +25,14 @@
 @property (nonatomic, retain) Commit*   commit;
 @property (nonatomic, retain) Commit*   newcommit;
 
+@property (nonatomic, retain) NSSet*    payloads;
+
 #pragma mark dao extension
 
 -(Commit*)  nextCommit:(NSError**)error;
 -(BOOL)     cancelNextCommit:(NSError**)error;
 
 -(NSArray*) allCommits:(NSError**)error;
--(NSArray*) allPayloads:(NSError**)error;
 
 -(void)     addNewPayloadObject:(Payload*)payload removedPayload:(Payload*)removedPayload                  context:(NSString*)context;
 -(void)     addNewPayloadObject:(Payload*)payload removedPayloadObjectId:(NSString*)removedPayloadObjectId context:(NSString*)context;
@@ -38,5 +42,14 @@
 +(NSArray*) allVaults:(NSError**)error;
 +(BOOL)     deleteVault:(Vault*)vault andError:(NSError**)error;
 
+
+@end
+
+@interface Vault (CoreDataGeneratedAccessors)
+
+-(void)addPayloadsObject:(Payload*)value;
+-(void)removePayloadsObject:(Payload*)value;
+-(void)addPayloads:(NSSet*)values;
+-(void)removePayloads:(NSSet*)values;
 
 @end

@@ -10,18 +10,19 @@
 #import <CoreData/CoreData.h>
 #import "Password.h"
 
+@class Payload;
 @interface Key : NSManagedObject
 
-@property (nonatomic, retain) NSString* iv;
-@property (nonatomic, retain) NSString* payloadalgorithm;
-@property (nonatomic, retain) NSString* payloadiv;
-@property (nonatomic, retain) NSData*   payloadkey;
-@property (nonatomic, retain) Password* password;
+@property (nonatomic, retain) NSDate*   createts;
+@property (nonatomic, retain) NSString* cryptoalgorithm;
+@property (nonatomic, retain) NSString* cryptoiv;
+@property (nonatomic, retain) NSData*   encryptedkey;
+@property (nonatomic, retain) NSString* authentication;
+@property (nonatomic, retain) Payload*  payload;
 
 #pragma mark dao extension
 
-
-+(Key*) keyWithIV:(NSString*)iv andPayloadKey:(NSData*)payloadKey andPayloadIV:(NSString*)payloadIV andPayloadAlgorith:(NSString*)payloadAlgorithm andError:(NSError**)error;
-+(Key*) keyWithRandomKey:(NSData*)passwordKey andError:(NSError**)error;
++(Key*) keyWithEncryptedKey:(NSData*)encryptedKey andCryptoIV:(NSString*)cryptoIV andCryptoAlgorith:(NSString*)cryptoAlgorithm andError:(NSError**)error;
++(Key*) keyWithRandomKey:(NSData*)passwordKey andKeySize:(NSUInteger)keySize andError:(NSError**)error;
 
 @end

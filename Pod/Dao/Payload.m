@@ -12,14 +12,17 @@
 #import "CryptoService.h"
 #import "TresorDaoCategories.h"
 #import "TresorModel.h"
- 
+#import "NSString+Crypto.h"
+#import "TresorUtilConstant.h"
 
 @implementation Payload
 
 @dynamic createts;
 @dynamic encryptedpayload;
-@dynamic keyobjectid;
-@dynamic vaultobjectid;
+@dynamic vault;
+@dynamic cryptoalgorithm;
+@dynamic cryptoiv;
+@dynamic keys;
 
 #pragma mark dao extension
 
@@ -104,41 +107,41 @@
 
 #pragma mark messages
 
+
 /**
  *
  */
 -(NSString*) description
 { id        decryptedPayload = [self decryptedPayload];
-  NSString* result           = decryptedPayload ? [NSString stringWithFormat:@"Payload[createts:%@ key:%@ payload:%@]",self.createts,self.keyobjectid,self.decryptedPayload]
-                                                : [NSString stringWithFormat:@"Payload[createts:%@ key:%@]",self.createts,self.keyobjectid];
+  Key*      anyKey           = [self.keys anyObject];
+  NSString* result           = decryptedPayload ? [NSString stringWithFormat:@"Payload[createts:%@ key:%@ payload:%@]",self.createts,[anyKey uniqueObjectId],self.decryptedPayload]
+                                                : [NSString stringWithFormat:@"Payload[createts:%@ key:%@]",self.createts,[anyKey uniqueObjectId]];
   
   return result;
 }
 
 
-/**
- *
- */
-+(Payload*) payloadWithKey:(Key*)key andError:(NSError**)error
-{ Payload* result = [NSEntityDescription insertNewObjectForEntityForName:@"Payload" inManagedObjectContext:_MOC];
-  
-  result.keyobjectid = [key uniqueObjectId];
-  result.createts    = [NSDate date];
-  
-  _MOC_SAVERETURN;
-}
 
 /**
  *
  */
 +(Payload*) payloadWithRandomKey:(NSError**)error
-{ Key*        key     = [Key keyWithRandomKey:_DUMMYPASSWORD andError:error];
-  Payload*    payload = nil;
+{ Payload*        result = nil;
+  VaultAlgorithmT vat    = vaultAES256;
+  AlgorithmInfoT  vai    = VaultAlgorithmInfo[vat];
+  Key*            key    = [Key keyWithRandomKey:_DUMMYPASSWORD andKeySize:vai.keySize andError:error];
   
   if( key )
-    payload = [Payload payloadWithKey:key andError:error];
-
-  return payload;
+  { result = [NSEntityDescription insertNewObjectForEntityForName:@"Payload" inManagedObjectContext:_MOC];
+  
+    result.createts         = [NSDate date];
+    result.cryptoiv         = [[NSData dataWithRandom:vai.blockSize] hexStringValue];
+    result.cryptoalgorithm  = VaultAlgorithmString[vat];
+    
+    key.payload = result;
+  } /* of if */
+  
+  return result;
 }
 
 /**
@@ -148,16 +151,11 @@
 { PMKPromise* promise = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
   { NSError*    error   = nil;
     PMKPromise* promise = nil;
-    Key*        key     = [Key keyWithRandomKey:_DUMMYPASSWORD andError:&error];
-    Payload*    payload = nil;
+    Payload*    payload = [Payload payloadWithRandomKey:&error];
      
-    if( key )
-    { payload = [Payload payloadWithKey:key andError:&error];
-       
-      if( payload )
-        promise = [[CryptoService sharedInstance] encryptPayload:payload forObject:object];
-    } /* of if */
-     
+    if( payload )
+      promise = [[CryptoService sharedInstance] encryptPayload:payload forObject:object];
+    
     if( promise )
     { //_NSLOG(@"new payload:%@",payload.uniqueObjectId);
       

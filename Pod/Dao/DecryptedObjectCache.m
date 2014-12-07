@@ -62,7 +62,10 @@
  *
  */
 -(void) setDecryptedObject:(id)object forUniqueId:(NSString*)uniqueId
-{ [self.cache setObject:object forKey:uniqueId]; }
+{
+  if( object )
+    [self.cache setObject:object forKey:uniqueId];
+}
 
 
 /**

@@ -21,11 +21,14 @@
 
 @implementation Vault
 
+@dynamic createts;
+@dynamic modifyts;
 @dynamic vaulttype;
 @dynamic vaultname;
 @dynamic vaulticon;
 @dynamic commit;
 @dynamic newcommit;
+@dynamic payloads;
 
 /**
  *
@@ -36,8 +39,8 @@
   self = [super init];
  
   if (self)
-  { self->_newPayloads = [[NSMutableArray alloc] initWithCapacity:10];
-    self->_intermediatePayloads= [[NSMutableArray alloc] initWithCapacity:10];
+  { self->_newPayloads          = [[NSMutableArray alloc] initWithCapacity:10];
+    self->_intermediatePayloads = [[NSMutableArray alloc] initWithCapacity:10];
   } /* of if */
   
   return self;
@@ -53,8 +56,8 @@
   self = [super initWithEntity:entity insertIntoManagedObjectContext:context];
   
   if( self )
-  { self->_newPayloads = [[NSMutableArray alloc] initWithCapacity:10];
-    self->_intermediatePayloads= [[NSMutableArray alloc] initWithCapacity:10];
+  { self->_newPayloads          = [[NSMutableArray alloc] initWithCapacity:10];
+    self->_intermediatePayloads = [[NSMutableArray alloc] initWithCapacity:10];
   } /* of if */
   
   return self;
@@ -71,13 +74,13 @@
   if( removedPayload && [self->_newPayloads containsObject:removedPayload] )
   { [self->_intermediatePayloads addObject:removedPayload];
     
-    removedPayload.vaultobjectid = nil;
+    removedPayload.vault = nil;
     
     [self->_newPayloads removeObject:removedPayload];
   } /* of if */
   
   if( ![self->_newPayloads containsObject:payload] )
-  { payload.vaultobjectid = [self uniqueObjectId];
+  { payload.vault = self;
     
     [self->_newPayloads addObject:payload];
   } /* of if */
@@ -96,7 +99,7 @@
       if( [[p uniqueObjectId] isEqualToString:removedPayloadObjectId] )
       { [self->_intermediatePayloads addObject:p];
         
-        p.vaultobjectid = nil;
+        p.vault = nil;
         foundPayload = p;
         break;
       } /* of if */
@@ -106,7 +109,7 @@
   } /* of if */
   
   if( ![self->_newPayloads containsObject:payload] )
-  { payload.vaultobjectid = [self uniqueObjectId];
+  { payload.vault = self;
     [self->_newPayloads addObject:payload];
   } /* of if */
 }
@@ -145,15 +148,7 @@
   { [self->_intermediatePayloads addObjectsFromArray:self->_newPayloads];
     
     for( Payload* p in self->_intermediatePayloads )
-    { NSError* error = nil;
-      Key* k = (Key*)[_MOC loadObjectWithObjectID:p.keyobjectid andError:&error];
-      
-      if( k==nil )
-        goto cleanup;
-      
-      [_MOC deleteObject:k];
       [_MOC deleteObject:p];
-    } /* of for */
     
   cleanup:
 
@@ -178,16 +173,8 @@
  
   if( [key isEqualToString:@"commit"] )
   { for( Payload* p in self->_intermediatePayloads )
-    { NSError* error = nil;
+    { _NSLOG(@"%@",p.uniqueObjectId);
       
-      _NSLOG(@"%@",p.uniqueObjectId);
-    
-      Key* k = (Key*)[_MOC loadObjectWithObjectID:p.keyobjectid andError:&error];
-      
-      if( k==nil )
-        goto cleanup;
-      
-      [_MOC deleteObject:k];
       [_MOC deleteObject:p];
     } /* of for */
     
@@ -227,16 +214,6 @@
 }
 
 
-/**
- *
- */
--(NSArray*) allPayloads:(NSError**)error
-{ NSFetchRequest* fetchRequest = [[NSFetchRequest alloc] initWithEntityName:@"Payload"];
-  
-  [fetchRequest setPredicate:[NSPredicate predicateWithFormat:@"vaultobjectid=%@",self.uniqueObjectId]];
-  
-  return [_MOC executeFetchRequest:fetchRequest error:error];
-}
 
 /**
  *
@@ -279,6 +256,7 @@
   
   result.vaultname = vaultName;
   result.vaulttype = vaultType;
+  result.createts  = [NSDate date];
   
   _MOC_SAVERETURN;
 }
@@ -324,23 +302,15 @@
 +(BOOL) deleteVault:(Vault*)vault andError:(NSError**)error
 { BOOL            result      = NO;
   NSArray*        allCommits  = nil;
-  NSArray*        allPayloads = nil;
   
   _RESETERROR;
   
-  if( vault && (allCommits=[vault allCommits:error]) && (allPayloads=[vault allPayloads:error]) )
+  if( vault && (allCommits=[vault allCommits:error]) )
   { for( Commit* c in allCommits )
       [_MOC deleteObject:c];
     
-    for( Payload* p in allPayloads )
-    { Key* k = (Key*)[_MOC loadObjectWithObjectID:p.keyobjectid andError:error];
-      
-      if( k==nil )
-        goto cleanup;
-      
+    for( Payload* p in vault.payloads )
       [_MOC deleteObject:p];
-      [_MOC deleteObject:k];
-    } /* of for */
     
     [_MOC deleteObject:vault];
     

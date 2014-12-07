@@ -21,8 +21,7 @@
 @dynamic passwordtype;
 @dynamic passwordlength;
 @dynamic tries;
-@dynamic wrongpasswordtrategy;
-@dynamic keys;
+@dynamic wrongpasswordstrategy;
 
 #pragma mark dao extension
 
@@ -49,7 +48,7 @@
   result.passwordsalt           = @"1234";
   result.passwordtype           = @"pin";
   result.passwordlength         = [NSNumber numberWithInteger:6];
-  result.wrongpasswordtrategy   = @"lock";
+  result.wrongpasswordstrategy  = @"lock";
   
   _MOC_SAVERETURN;
 }

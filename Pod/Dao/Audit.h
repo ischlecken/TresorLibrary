@@ -21,12 +21,12 @@
 
 @interface Audit : NSManagedObject
 
-@property (nonatomic, retain) NSDate * createts;
-@property (nonatomic, retain) NSNumber * eventid;
-@property (nonatomic, retain) NSString * param1;
-@property (nonatomic, retain) NSString * param2;
-@property (nonatomic, retain) NSString * param3;
-@property (nonatomic, retain) NSData * picture;
+@property (nonatomic, retain) NSDate*   createts;
+@property (nonatomic, retain) NSNumber* eventid;
+@property (nonatomic, retain) NSString* param1;
+@property (nonatomic, retain) NSString* param2;
+@property (nonatomic, retain) NSString* param3;
+@property (nonatomic, retain) NSData*   picture;
 
 #pragma mark dao extension
 
