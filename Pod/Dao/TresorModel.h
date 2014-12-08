@@ -20,7 +20,6 @@
 #import "Commit.h"
 #import "Payload.h"
 #import "Key.h"
-#import "Password.h"
 #import "Audit.h"
 #import "PayloadItem.h"
 #import "PayloadItemList.h"

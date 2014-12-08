@@ -24,27 +24,17 @@
         <attribute name="cryptoalgorithm" attributeType="String" maxValueString="32" syncable="YES"/>
         <attribute name="cryptoiv" attributeType="String" maxValueString="100" syncable="YES"/>
         <attribute name="encryptedkey" attributeType="Binary" syncable="YES"/>
-        <relationship name="payload" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Payload" inverseName="keys" inverseEntity="Payload" syncable="YES"/>
-    </entity>
-    <entity name="Password" representedClassName="Password" syncable="YES">
-        <attribute name="createts" attributeType="Date" syncable="YES"/>
-        <attribute name="kdf" attributeType="String" maxValueString="32" syncable="YES"/>
-        <attribute name="kdfparam" optional="YES" attributeType="String" maxValueString="100" syncable="YES"/>
+        <attribute name="failedauthentications" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="lockcount" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="locktimestamp" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="maxtries" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="passwordlength" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="passwordsalt" optional="YES" attributeType="String" maxValueString="100" syncable="YES"/>
-        <attribute name="passwordtype" optional="YES" attributeType="String" maxValueString="32" syncable="YES"/>
-        <attribute name="tries" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="wrongpasswordstrategy" attributeType="String" maxValueString="32" syncable="YES"/>
+        <attribute name="lockts" optional="YES" attributeType="Date" syncable="YES"/>
+        <relationship name="payload" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Payload" inverseName="keys" inverseEntity="Payload" syncable="YES"/>
     </entity>
     <entity name="Payload" representedClassName="Payload" syncable="YES">
         <attribute name="createts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="cryptoalgorithm" attributeType="String" maxValueString="32" syncable="YES"/>
         <attribute name="cryptoiv" attributeType="String" maxValueString="100" syncable="YES"/>
         <attribute name="encryptedpayload" optional="YES" attributeType="Binary" syncable="YES"/>
-        <relationship name="keys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Key" inverseName="payload" inverseEntity="Key" syncable="YES"/>
+        <relationship name="keys" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Key" inverseName="payload" inverseEntity="Key" syncable="YES"/>
         <relationship name="vault" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Vault" inverseName="payloads" inverseEntity="Vault" syncable="YES"/>
     </entity>
     <entity name="Vault" representedClassName="Vault" syncable="YES">
@@ -58,10 +48,9 @@
         <relationship name="payloads" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Payload" inverseName="vault" inverseEntity="Payload" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Audit" positionX="-171" positionY="-99" width="128" height="133"/>
+        <element name="Audit" positionX="-92" positionY="81" width="128" height="133"/>
         <element name="Commit" positionX="-470" positionY="-99" width="128" height="133"/>
-        <element name="Key" positionX="-279" positionY="272" width="128" height="133"/>
-        <element name="Password" positionX="7" positionY="180" width="128" height="208"/>
+        <element name="Key" positionX="-279" positionY="272" width="128" height="178"/>
         <element name="Payload" positionX="-470" positionY="288" width="128" height="133"/>
         <element name="Vault" positionX="-657" positionY="90" width="128" height="163"/>
     </elements>

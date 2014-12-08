@@ -14,6 +14,9 @@
 @implementation Key
 
 @dynamic createts;
+@dynamic lockts;
+@dynamic lockcount;
+@dynamic failedauthentications;
 @dynamic cryptoalgorithm;
 @dynamic cryptoiv;
 @dynamic encryptedkey;

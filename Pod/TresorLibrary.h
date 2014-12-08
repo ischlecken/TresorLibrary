@@ -36,7 +36,6 @@
 #import "Commit.h"
 #import "Key.h"
 #import "Payload.h"
-#import "Password.h"
 #import "Vault.h"
 #import "PayloadItem.h"
 #import "PayloadItemList.h"

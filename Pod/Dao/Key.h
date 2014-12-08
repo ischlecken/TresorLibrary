@@ -8,12 +8,14 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
-#import "Password.h"
 
 @class Payload;
 @interface Key : NSManagedObject
 
 @property (nonatomic, retain) NSDate*   createts;
+@property (nonatomic, retain) NSDate*   lockts;
+@property (nonatomic, retain) NSNumber* lockcount;
+@property (nonatomic, retain) NSNumber* failedauthentications;
 @property (nonatomic, retain) NSString* cryptoalgorithm;
 @property (nonatomic, retain) NSString* cryptoiv;
 @property (nonatomic, retain) NSData*   encryptedkey;
