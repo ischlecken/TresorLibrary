@@ -29,6 +29,7 @@
 @dynamic commit;
 @dynamic newcommit;
 @dynamic payloads;
+@dynamic masterkeys;
 
 /**
  *

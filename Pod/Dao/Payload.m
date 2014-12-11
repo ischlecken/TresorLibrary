@@ -22,7 +22,7 @@
 @dynamic vault;
 @dynamic cryptoalgorithm;
 @dynamic cryptoiv;
-@dynamic keys;
+@dynamic key;
 
 #pragma mark dao extension
 
@@ -113,9 +113,8 @@
  */
 -(NSString*) description
 { id        decryptedPayload = [self decryptedPayload];
-  Key*      anyKey           = [self.keys anyObject];
-  NSString* result           = decryptedPayload ? [NSString stringWithFormat:@"Payload[createts:%@ key:%@ payload:%@]",self.createts,[anyKey uniqueObjectId],self.decryptedPayload]
-                                                : [NSString stringWithFormat:@"Payload[createts:%@ key:%@]",self.createts,[anyKey uniqueObjectId]];
+  NSString* result           = decryptedPayload ? [NSString stringWithFormat:@"Payload[createts:%@ key:%@ payload:%@]",self.createts,[self.key uniqueObjectId],self.decryptedPayload]
+                                                : [NSString stringWithFormat:@"Payload[createts:%@ key:%@]",self.createts,[self.key uniqueObjectId]];
   
   return result;
 }

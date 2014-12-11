@@ -21,7 +21,7 @@
 @property (nonatomic, retain) Vault*    vault;
 @property (nonatomic, retain) NSString* cryptoiv;
 @property (nonatomic, retain) NSString* cryptoalgorithm;
-@property (nonatomic, retain) NSSet*    keys;
+@property (nonatomic, retain) Key*      key;
 
 #pragma mark dao extension
 
@@ -33,11 +33,3 @@
 
 @end
 
-@interface Payload (CoreDataGeneratedAccessors)
-
-- (void)addKeysObject:(Key *)value;
-- (void)removeKeysObject:(Key *)value;
-- (void)addKeys:(NSSet *)values;
-- (void)removeKeys:(NSSet *)values;
-
-@end

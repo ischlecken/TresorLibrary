@@ -35,6 +35,7 @@
 #import "Audit.h"
 #import "Commit.h"
 #import "Key.h"
+#import "MasterKey.h"
 #import "Payload.h"
 #import "Vault.h"
 #import "PayloadItem.h"

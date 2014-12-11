@@ -226,7 +226,7 @@ typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
       result = decryptedPayloadKey
       .then(^(NSData* passwordKey)
       { NSError* error = nil;
-        Key*     key   = [payload.keys anyObject];
+        Key*     key   = payload.key;
         
         if( key==nil )
           return (id)error;
@@ -262,7 +262,7 @@ typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
     result = decryptedPayloadKey
     .then(^(NSData* passwordKey)
     { NSError* error = nil;
-      Key*     key   = [payload.keys anyObject];
+      Key*     key   = payload.key;
       
       if( key==nil )
         return (id)error;

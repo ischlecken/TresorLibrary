@@ -13,13 +13,9 @@
 @interface Key : NSManagedObject
 
 @property (nonatomic, retain) NSDate*   createts;
-@property (nonatomic, retain) NSDate*   lockts;
-@property (nonatomic, retain) NSNumber* lockcount;
-@property (nonatomic, retain) NSNumber* failedauthentications;
 @property (nonatomic, retain) NSString* cryptoalgorithm;
 @property (nonatomic, retain) NSString* cryptoiv;
 @property (nonatomic, retain) NSData*   encryptedkey;
-@property (nonatomic, retain) NSString* authentication;
 @property (nonatomic, retain) Payload*  payload;
 
 #pragma mark dao extension

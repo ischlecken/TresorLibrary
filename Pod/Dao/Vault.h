@@ -12,6 +12,7 @@
 
 @class Commit;
 @class Payload;
+@class MasterKey;
 
 @interface Vault : NSManagedObject <Visit>
 
@@ -26,6 +27,8 @@
 @property (nonatomic, retain) Commit*   newcommit;
 
 @property (nonatomic, retain) NSSet*    payloads;
+
+@property (nonatomic, retain) NSSet*    masterkeys;
 
 #pragma mark dao extension
 
@@ -51,5 +54,10 @@
 -(void)removePayloadsObject:(Payload*)value;
 -(void)addPayloads:(NSSet*)values;
 -(void)removePayloads:(NSSet*)values;
+
+-(void)addMasterKeysObject:(MasterKey*)value;
+-(void)removeMasterKeysObject:(MasterKey*)value;
+-(void)addMasterKeys:(NSSet*)values;
+-(void)removeMasterKeys:(NSSet*)values;
 
 @end
