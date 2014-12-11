@@ -25,3 +25,35 @@
 @property (nonatomic, retain) NSString* authentication;
 
 @end
+
+
+/**
+
+ Usecases:
+ 
+ 1. create vault
+    --> create a random masterkey, encrypt with key derived from password/pin
+    --> later store encryptedkey not in sqlite db, but in secure keychain
+ 
+ 2. add payload
+    --> create key encrypted with masterkey
+
+ 3. change password/pin
+    --> reencrypt masterkey using new key derived from password/pin
+ 
+ 4. rescue key
+    --> create second masterkey entry with encrypted masterkey using a 
+        random password/pin that is displayed to the user
+ 
+ 5. authentication failed
+    --> lock corresponding password/pin masterkey for a period of time
+    --> delete masterkey after n locks
+    --> unlock vault using rescue key
+ 
+ 6. change masterkey
+    --> decrypt all keys using this masterkey and encrypt with new masterkey
+ 
+ 7. use of many masterkeys
+    --> link key to corresponding masterkey
+ 
+ */
