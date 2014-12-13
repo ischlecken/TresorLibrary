@@ -34,10 +34,9 @@
 
 @dynamic createts;
 @dynamic message;
-@dynamic parentobjectid;
-@dynamic payloadobjectid;
+@dynamic parentcommitoid;
+@dynamic payloadoid;
 @dynamic vault;
-@dynamic newvault;
 @dynamic payloads;
 
 #pragma mark dao extension
@@ -65,13 +64,6 @@
 /**
  *
  */
--(NSString*) payloadObjectId
-{ return self.payloadobjectid; }
-
-
-/**
- *
- */
 -(void) setTitle:(NSString*)value
 { self.message = value; }
 
@@ -91,7 +83,7 @@
  *
  */
 -(void) setPayloadObjectId:(NSString*)value
-{ self.payloadobjectid = value; }
+{ self.payloadoid = value; }
 
 
 #pragma mark messages
@@ -102,7 +94,7 @@
 -(PMKPromise*) loadPayloadObject
 { PMKPromise* promise = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
    { NSError* error = nil;
-     id       obj   = [_MOC loadObjectWithObjectID:self.payloadobjectid andError:&error];
+     id       obj   = [_MOC loadObjectWithObjectID:self.payloadoid andError:&error];
      
      if( obj && ![obj isKindOfClass:[Payload class]] )
        rejecter(_TRESORERROR(TresorErrorUnexpectedObjectClass));
@@ -121,9 +113,9 @@
 -(PMKPromise*) createPayloadObject
 { PMKPromise* promise = [Payload payloadWithObject:[PayloadItemList new]]
   .then(^(Payload* payload)
-  { self.payloadobjectid = [payload uniqueObjectId];
+  { self.payloadoid = [payload uniqueObjectId];
     
-    [self.newvault addNewPayloadObject:payload removedPayload:nil context:@"createPayloadForCommit"];
+    [self addPayloadsObject:payload];
     
     return payload;
   });
@@ -135,7 +127,7 @@
  *
  */
 -(PMKPromise*) payloadObject
-{ PMKPromise* promise = self.payloadobjectid==nil ? [self createPayloadObject] : [self loadPayloadObject];
+{ PMKPromise* promise = self.payloadoid==nil ? [self createPayloadObject] : [self loadPayloadObject];
   
   return promise;
 }
@@ -146,7 +138,7 @@
  *
  */
 -(NSString*) description
-{ return [NSString stringWithFormat:@"Commit[createts:%@ message:'%@' parentobjectid:%@ payloadobjectid:%@]",self.createts,self.message,self.parentobjectid,self.payloadobjectid]; }
+{ return [NSString stringWithFormat:@"Commit[createts:%@ message:'%@' parentcommitoid:%@ payloadoid:%@]",self.createts,self.message,self.parentcommitoid,self.payloadoid]; }
 
 /**
  *
@@ -222,7 +214,7 @@
       return;
     } /* of if */
      
-    if( self.payloadobjectid==nil && path.length>0 )
+    if( self.payloadoid==nil && path.length>0 )
     { rejecter(_TRESORERROR(TresorErrorPathMismatch));
        
       return;
@@ -249,7 +241,7 @@
         
         _NSLOG(@"[%ld,%ld]:%@",(unsigned long)ppi,(unsigned long)[path indexAtPosition:ppi],pi);
         
-        id               payload = [_MOC loadObjectWithObjectID:pi.payloadObjectId andError:&error];
+        id               payload = [_MOC loadObjectWithObjectID:pi.payloadoid andError:&error];
         
         if( payload==nil || ![payload isKindOfClass:[Payload class]] )
           return (id)_TRESORERROR(TresorErrorUnexpectedObjectClass);
@@ -294,18 +286,20 @@
  
  */
 -(PMKPromise*) updateParentPathWithNewPayload:(Payload*)newPl inParentPath:(NSMutableArray*)parentPath
-{
-  PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
-  { fulfiller(newPl);
-  }];
-
+{ PMKPromise* result = [self loadPayloadObject];
+  
+  result = result.then(^(Payload* payload)
+  { [self removePayloadsObject:payload];
+   
+    return [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
+            { fulfiller(newPl); }];
+  });
+  
   if( parentPath )
     for( NSUInteger ppi=1;ppi<parentPath.count;ppi++ )
       result = result.then([^(Payload* newChildPayload)
-      {
-        Payload*         oldChildPayload = [parentPath objectAtIndex:ppi-1];
+      { Payload*         oldChildPayload = [parentPath objectAtIndex:ppi-1];
         Payload*         payload         = [parentPath objectAtIndex:ppi];
-        
         PayloadItemList* pil             = [payload decryptedPayload];
         
         if( pil==nil )
@@ -314,16 +308,17 @@
         PayloadItemList* newPil    = [pil updatePayload:oldChildPayload withNewPayload:newChildPayload];
         
         [parentPath replaceObjectAtIndex:ppi-1 withObject:newChildPayload];
-        
-        [self.newvault addNewPayloadObject:newChildPayload removedPayload:oldChildPayload context:[NSString stringWithFormat:@"updateParentPath[%ld]",(long)ppi]];
+       
+        [self removePayloadsObject:oldChildPayload];
+        [self addPayloadsObject:newChildPayload];
         
         return (id)[Payload payloadWithObject:newPil];
       } copy]);
   
   result = result.then(^(Payload* newPayload)
-  { [self.newvault addNewPayloadObject:newPayload removedPayloadObjectId:self.payloadobjectid context:@"updateParentPath - set commit"];
+  { [self addPayloadsObject:newPayload];
     
-    self.payloadobjectid = [newPayload uniqueObjectId];
+    self.payloadoid = [newPayload uniqueObjectId];
     
     return parentPath;
   });
@@ -380,7 +375,7 @@
       return [Payload payloadWithObject:obj];
     })
     .then(^(Payload* textPayload)
-    { [self.newvault addNewPayloadObject:textPayload removedPayload:nil context:[NSString stringWithFormat:@"addPayloadWithTitle:%@",obj]];
+    { [self addPayloadsObject:textPayload];
       
       Payload* pl = [parentPath firstObject];
             
@@ -422,8 +417,8 @@
       return [Payload payloadWithObject:[PayloadItemList new]];
     })
     .then(^(Payload* itemListPayload)
-    { [self.newvault addNewPayloadObject:itemListPayload removedPayload:nil context:@"addPayloadItemList"];
-      
+    { [self addPayloadsObject:itemListPayload];
+            
       Payload* pl = [parentPath firstObject];
             
       if( ![pl isPayloadItemList] )
@@ -501,8 +496,8 @@
     return [Payload payloadWithObject:obj];
   })
   .then(^(Payload* itemListPayload)
-  { [self.newvault addNewPayloadObject:itemListPayload removedPayload:nil context:[NSString stringWithFormat:@"updatePayloadItemWithText:%@",obj]];
-    
+  { [self addPayloadsObject:itemListPayload];
+          
     Payload* pl = [parentPath firstObject];
     
     if( ![pl isPayloadItemList] )
@@ -544,7 +539,7 @@
     return [Payload payloadWithObject:[PayloadItemList new]];
   })
   .then(^(Payload* itemListPayload)
-  { [self.newvault addNewPayloadObject:itemListPayload removedPayload:nil context:@"updatePayloadItemList"];
+  { [self addPayloadsObject:itemListPayload];
     
     Payload* pl = [parentPath firstObject];
     
@@ -631,8 +626,8 @@
   
   result.message         = @"pending";
   result.createts        = [NSDate date];
-  result.payloadobjectid = [parentCommit payloadobjectid];
-  result.parentobjectid  = [parentCommit uniqueObjectId];
+  result.payloadoid      = [parentCommit payloadoid];
+  result.parentcommitoid = [parentCommit uniqueObjectId];
   
   _MOC_SAVERETURN;
 }

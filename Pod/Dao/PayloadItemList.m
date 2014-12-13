@@ -148,10 +148,10 @@
   if( payload )
   { NSMutableArray* list = [[NSMutableArray alloc] initWithCapacity:self.list.count];
     
-    NSString* payloadObjectId = [payload uniqueObjectId];
+    NSString* payloadoid = [payload uniqueObjectId];
     for( PayloadItem* pi in self.list )
     {
-      if( [pi.payloadObjectId isEqual:payloadObjectId] )
+      if( [pi.payloadoid isEqual:payloadoid] )
       { PayloadItem* newPi = [pi updatePayloadObjectId:[newPayload uniqueObjectId]];
         
         [list addObject:newPi];

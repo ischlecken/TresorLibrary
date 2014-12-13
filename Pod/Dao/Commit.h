@@ -31,11 +31,9 @@ typedef PayloadItemList* (^UpdateParentPathHandler)(PayloadItemList* pl);
 
 @property (nonatomic, retain) NSDate*   createts;
 @property (nonatomic, retain) NSString* message;
-@property (nonatomic, retain) NSString* parentobjectid;
-@property (nonatomic, retain) NSString* payloadobjectid;
+@property (nonatomic, retain) NSString* parentcommitoid;
+@property (nonatomic, retain) NSString* payloadoid;
 @property (nonatomic, retain) Vault*    vault;
-@property (nonatomic, retain) Vault*    newvault;
-
 @property (nonatomic, retain) NSSet*    payloads;
 
 #pragma mark dao extension

@@ -13,8 +13,8 @@
     <entity name="Commit" representedClassName="Commit" syncable="YES">
         <attribute name="createts" attributeType="Date" syncable="YES"/>
         <attribute name="message" attributeType="String" maxValueString="1024" syncable="YES"/>
-        <attribute name="parentobjectid" optional="YES" attributeType="String" maxValueString="256" syncable="YES"/>
-        <attribute name="payloadobjectid" attributeType="String" syncable="YES"/>
+        <attribute name="parentcommitoid" optional="YES" attributeType="String" maxValueString="256" syncable="YES"/>
+        <attribute name="payloadoid" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="payloads" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Payload" inverseName="commits" inverseEntity="Payload" syncable="YES"/>
         <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="commit" inverseEntity="Vault" syncable="YES"/>
     </entity>
@@ -24,7 +24,7 @@
         <attribute name="cryptoiv" attributeType="String" maxValueString="100" syncable="YES"/>
         <attribute name="encryptedkey" attributeType="Binary" syncable="YES"/>
         <relationship name="masterkeys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MasterKey" inverseName="keys" inverseEntity="MasterKey" syncable="YES"/>
-        <relationship name="payload" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="Payload" inverseName="key" inverseEntity="Payload" syncable="YES"/>
+        <relationship name="payload" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Payload" inverseName="key" inverseEntity="Payload" syncable="YES"/>
     </entity>
     <entity name="MasterKey" representedClassName="MasterKey" syncable="YES">
         <attribute name="authentication" attributeType="String" syncable="YES"/>
@@ -48,7 +48,7 @@
     <entity name="Vault" representedClassName="Vault" syncable="YES">
         <attribute name="createts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="modifyts" optional="YES" attributeType="Date" syncable="YES"/>
-        <attribute name="nextcommitobjectid" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="nextcommitoid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="vaulticon" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="vaultname" attributeType="String" syncable="YES"/>
         <attribute name="vaulttype" optional="YES" attributeType="String" maxValueString="32" syncable="YES"/>

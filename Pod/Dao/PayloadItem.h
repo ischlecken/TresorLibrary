@@ -11,13 +11,13 @@
 
 @interface PayloadItem : JSONModel<PayloadItem,NSCoding,NSCopying>
 
--(instancetype) initWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andPayloadObjectId:(NSString*)payloadObjectId;
+-(instancetype) initWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andPayloadObjectId:(NSString*)payloadoid;
 
 -(PayloadItem*) updateTitle:(NSString*)title;
 -(PayloadItem*) updateSubtitle:(NSString*)subtitle;
 -(PayloadItem*) updateIcon:(NSString*)icon;
 -(PayloadItem*) updateTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon;
--(PayloadItem*) updatePayloadObjectId:(NSString*)payloadObjectId;
+-(PayloadItem*) updatePayloadObjectId:(NSString*)payloadoid;
 
 -(Payload*)     payload:(NSError**)error;
 

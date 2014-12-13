@@ -21,18 +21,16 @@
 @property (nonatomic, retain) NSString* vaultname;
 @property (nonatomic, retain) NSData*   vaulticon;
 
-@property (nonatomic, retain) NSString* nextcommitobjectid;
+@property (nonatomic, retain) NSString* nextcommitoid;
 
 @property (nonatomic, retain) Commit*   commit;
 #pragma mark dao extension
 
--(Commit*)  nextCommit:(NSError**)error;
+-(Commit*)  nextCommit;
+-(Commit*)  useOrCreateNextCommit:(NSError**)error;
 -(BOOL)     cancelNextCommit:(NSError**)error;
 
 -(NSArray*) allCommits:(NSError**)error;
-
--(void)     addNewPayloadObject:(Payload*)payload removedPayload:(Payload*)removedPayload                  context:(NSString*)context;
--(void)     addNewPayloadObject:(Payload*)payload removedPayloadObjectId:(NSString*)removedPayloadObjectId context:(NSString*)context;
 
 +(Vault*)   vaultObjectWithName:(NSString*)vaultName andType:(NSString*)vaultType andError:(NSError**)error;
 +(Vault*)   findVaultByName:(NSString*)vaultName andError:(NSError**)error;

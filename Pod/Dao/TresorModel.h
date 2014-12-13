@@ -55,6 +55,7 @@ if( error ) *error=nil; \
 +(instancetype)            sharedInstance;
 -(void)                    reloadModels;
 -(void)                    resetCoreDataObjects;
+-(NSManagedObjectContext*) createManagedObjectContext;
 -(NSManagedObjectContext*) createTemporaryManagedObjectContext;
 
 -(BOOL)                    isVaultInEditMode:(Vault*)vault;

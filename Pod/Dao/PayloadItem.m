@@ -6,7 +6,7 @@
 
 @implementation PayloadItem
 
-@synthesize title=_title,subtitle=_subtitle,icon=_icon,payloadObjectId=_payloadObjectId;
+@synthesize title=_title,subtitle=_subtitle,icon=_icon,payloadoid=_payloadoid;
 
 /**
  *
@@ -15,10 +15,10 @@
 { self = [super init];
  
   if( self )
-  { _title             = nil;
-    _subtitle          = nil;
-    _icon              = nil;
-    _payloadObjectId   = nil;
+  { _title      = nil;
+    _subtitle   = nil;
+    _icon       = nil;
+    _payloadoid = nil;
   } /* of if */
   
   return self;
@@ -28,14 +28,14 @@
 /**
  *
  */
--(instancetype) initWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andPayloadObjectId:(NSString*)payloadObjectId
+-(instancetype) initWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andPayloadObjectId:(NSString*)payloadoid
 { self = [self init];
   
   if( self )
-  { _title             = title;
-    _subtitle          = subtitle;
-    _icon              = icon;
-    _payloadObjectId   = payloadObjectId;
+  { _title      = title;
+    _subtitle   = subtitle;
+    _icon       = icon;
+    _payloadoid = payloadoid;
   } /* of if */
   
   return self;
@@ -48,10 +48,10 @@
 { self = [super init];
   
   if( self )
-  { _title             = [decoder decodeObjectForKey :@"title"];
-    _subtitle          = [decoder decodeObjectForKey :@"subtitle"];
-    _icon              = [decoder decodeObjectForKey :@"icon"];
-    _payloadObjectId   = [decoder decodeObjectForKey :@"payloadObjectId"];
+  { _title      = [decoder decodeObjectForKey :@"title"];
+    _subtitle   = [decoder decodeObjectForKey :@"subtitle"];
+    _icon       = [decoder decodeObjectForKey :@"icon"];
+    _payloadoid = [decoder decodeObjectForKey :@"payloadoid"];
   } /* of if */
   
   return self;
@@ -61,10 +61,10 @@
  *
  */
 -(void) encodeWithCoder:(NSCoder*)encoder
-{ [encoder encodeObject :self.title             forKey:@"title"];
-  [encoder encodeObject :self.subtitle          forKey:@"subtitle"];
-  [encoder encodeObject :self.icon              forKey:@"icon"];
-  [encoder encodeObject :self.payloadObjectId   forKey:@"payloadObjectId"];
+{ [encoder encodeObject :self.title      forKey:@"title"];
+  [encoder encodeObject :self.subtitle   forKey:@"subtitle"];
+  [encoder encodeObject :self.icon       forKey:@"icon"];
+  [encoder encodeObject :self.payloadoid forKey:@"payloadoid"];
 }
 
 /**
@@ -76,7 +76,7 @@
   result->_title             = self.title;
   result->_subtitle          = self.subtitle;
   result->_icon              = self.icon;
-  result->_payloadObjectId   = self.payloadObjectId;
+  result->_payloadoid   = self.payloadoid;
   
   return result;
 }
@@ -131,10 +131,10 @@
 /**
  *
  */
--(PayloadItem*) updatePayloadObjectId:(NSString*)payloadObjectId
+-(PayloadItem*) updatePayloadObjectId:(NSString*)payloadoid
 { PayloadItem* result = [self copy];
   
-  result->_payloadObjectId   = payloadObjectId;
+  result->_payloadoid   = payloadoid;
   
   return result;
 }
@@ -152,7 +152,7 @@
     if( ((self.title          ==nil && payloadItemObject.title          ==nil) || [payloadItemObject.title           isEqual:self.title]          ) &&
         ((self.subtitle       ==nil && payloadItemObject.subtitle       ==nil) || [payloadItemObject.subtitle        isEqual:self.subtitle]       ) &&
         ((self.icon           ==nil && payloadItemObject.icon           ==nil) || [payloadItemObject.icon            isEqual:self.icon]           ) &&
-        ((self.payloadObjectId==nil && payloadItemObject.payloadObjectId==nil) || [payloadItemObject.payloadObjectId isEqual:self.payloadObjectId])
+        ((self.payloadoid==nil && payloadItemObject.payloadoid==nil) || [payloadItemObject.payloadoid isEqual:self.payloadoid])
       )
       result = YES;
   } /* of if */
@@ -171,7 +171,7 @@
   [result appendFormat:@"title:%@ ",self.title];
   [result appendFormat:@"subtitle:%@ ",self.subtitle];
   [result appendFormat:@"icon:%@ ",self.icon];
-  [result appendFormat:@"payloadobjectid:%@ ",self.payloadObjectId];
+  [result appendFormat:@"payloadoid:%@ ",self.payloadoid];
   
   [result appendString:@"]"];
   
@@ -182,7 +182,7 @@
  *
  */
 -(Payload*) payload:(NSError**)error
-{ Payload* result = (Payload*)[_MOC loadObjectWithObjectID:self.payloadObjectId andError:error];
+{ Payload* result = (Payload*)[_MOC loadObjectWithObjectID:self.payloadoid andError:error];
 
   return result;
 }

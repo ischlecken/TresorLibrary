@@ -225,25 +225,35 @@
  *
  */
 -(NSManagedObjectContext*) managedObjectContext
-{ if( _managedObjectContext==nil && [self persistentStoreCoordinator]!=nil )
-  { NSManagedObjectContext* moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
-    
+{ if( _managedObjectContext==nil )
+    _managedObjectContext = [self createManagedObjectContext];
+  
+  return _managedObjectContext;
+}
+
+/**
+ *
+ */
+-(NSManagedObjectContext*) createManagedObjectContext
+{ NSManagedObjectContext* moc = nil;
+  
+  if( [self persistentStoreCoordinator]!=nil )
+  { moc = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+  
 #if 1
     [moc setPersistentStoreCoordinator: [self persistentStoreCoordinator]];
 #else
     moc.parentContext = [self writerManagedObjectContext];
 #endif
-    
-    [moc performBlockAndWait:
-     ^{
-       // configure context properties
-       [moc setMergePolicy:[[NSMergePolicy alloc] initWithMergeType:NSMergeByPropertyObjectTrumpMergePolicyType] ];
-     }];
-    
-    _managedObjectContext = moc;
-  } /* of if */
   
-  return _managedObjectContext;
+  [moc performBlockAndWait:
+   ^{
+     // configure context properties
+     [moc setMergePolicy:[[NSMergePolicy alloc] initWithMergeType:NSMergeByPropertyObjectTrumpMergePolicyType] ];
+   }];
+} /* of if */
+  
+  return moc;
 }
 
 /**
