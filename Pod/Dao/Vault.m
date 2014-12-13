@@ -82,6 +82,8 @@
     
     if( result )
       self.nextcommitoid = [result uniqueObjectId];
+
+    [_MOC save:error];
   } /* of if */
   
   return result;
@@ -99,18 +101,23 @@
   Commit* nextCommit = self.nextCommit;
   if( nextCommit!=nil )
   { for( Payload* p in nextCommit.payloads )
-    { _NSLOG(@"delete %@",[p uniqueObjectId]);
-      
-      [_MOC deleteObject:p.key];
-      [_MOC deleteObject:p];
-    } /* of for */
+      if( p.commits.count<=1 )
+      { _NSLOG(@"delete %@",[p uniqueObjectId]);
+        
+        //[_MOC deleteObject:p.key];
+        [_MOC deleteObject:p];
+      } /* of for */
+   
+    [nextCommit removePayloads:nextCommit.payloads];
     
     _NSLOG(@"delete next commit %@",[nextCommit uniqueObjectId]);
-    
+
+    self.nextcommitoid = nil;
+
     [_MOC deleteObject:nextCommit];
     [_MOC save:error];
     
-    self.nextcommitoid = nil;
+    [self deleteOrphanPayloads];
     
     result = YES;
   } /* of if */

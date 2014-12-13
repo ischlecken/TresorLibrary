@@ -629,6 +629,9 @@
   result.payloadoid      = [parentCommit payloadoid];
   result.parentcommitoid = [parentCommit uniqueObjectId];
   
+  if( parentCommit )
+    [result addPayloads:parentCommit.payloads];
+  
   _MOC_SAVERETURN;
 }
 
