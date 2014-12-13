@@ -25,6 +25,7 @@
 
 typedef PayloadItemList* (^UpdateParentPathHandler)(PayloadItemList* pl);
 
+@class Payload;
 
 @interface Commit : NSManagedObject <PayloadItem,Visit>
 
@@ -34,6 +35,8 @@ typedef PayloadItemList* (^UpdateParentPathHandler)(PayloadItemList* pl);
 @property (nonatomic, retain) NSString* payloadobjectid;
 @property (nonatomic, retain) Vault*    vault;
 @property (nonatomic, retain) Vault*    newvault;
+
+@property (nonatomic, retain) NSSet*    payloads;
 
 #pragma mark dao extension
 
@@ -59,5 +62,14 @@ typedef PayloadItemList* (^UpdateParentPathHandler)(PayloadItemList* pl);
 
 +(Commit*)          commitObjectWithMessage:(NSString*)message andError:(NSError**)error;
 +(Commit*)          commitObjectUsingParentCommit:(Commit*)parentCommit andError:(NSError**)error;
+
+@end
+
+@interface Commit (CoreDataGeneratedAccessors)
+
+-(void)addPayloadsObject:(Payload*)value;
+-(void)removePayloadsObject:(Payload*)value;
+-(void)addPayloads:(NSSet*)values;
+-(void)removePayloads:(NSSet*)values;
 
 @end

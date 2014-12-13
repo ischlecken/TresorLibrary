@@ -10,6 +10,8 @@
 #import <CoreData/CoreData.h>
 
 @class Payload;
+@class MasterKey;
+
 @interface Key : NSManagedObject
 
 @property (nonatomic, retain) NSDate*   createts;
@@ -18,9 +20,20 @@
 @property (nonatomic, retain) NSData*   encryptedkey;
 @property (nonatomic, retain) Payload*  payload;
 
+@property (nonatomic, retain) NSSet*    masterkeys;
+
 #pragma mark dao extension
 
 +(Key*) keyWithEncryptedKey:(NSData*)encryptedKey andCryptoIV:(NSString*)cryptoIV andCryptoAlgorith:(NSString*)cryptoAlgorithm andError:(NSError**)error;
 +(Key*) keyWithRandomKey:(NSData*)passwordKey andKeySize:(NSUInteger)keySize andError:(NSError**)error;
+
+@end
+
+@interface Key (CoreDataGeneratedAccessors)
+
+-(void)addMasterKeysObject:(MasterKey*)value;
+-(void)removeMasterKeysObject:(MasterKey*)value;
+-(void)addMasterKeys:(NSSet*)values;
+-(void)removeMasterKeys:(NSSet*)values;
 
 @end

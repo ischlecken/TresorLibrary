@@ -13,15 +13,16 @@
 #import "Vault.h"
 
 @class Key;
+@class Commit;
 
 @interface Payload : NSManagedObject<PayloadItemList,Visit>
 
 @property (nonatomic, retain) NSDate*   createts;
 @property (nonatomic, retain) NSData*   encryptedpayload;
-@property (nonatomic, retain) Vault*    vault;
 @property (nonatomic, retain) NSString* cryptoiv;
 @property (nonatomic, retain) NSString* cryptoalgorithm;
 @property (nonatomic, retain) Key*      key;
+@property (nonatomic, retain) NSSet*    commits;
 
 #pragma mark dao extension
 
@@ -33,3 +34,11 @@
 
 @end
 
+@interface Payload (CoreDataGeneratedAccessors)
+
+-(void)addCommitsObject:(Commit*)value;
+-(void)removeCommitsObject:(Commit*)value;
+-(void)addCommits:(NSSet*)values;
+-(void)removeCommits:(NSSet*)values;
+
+@end

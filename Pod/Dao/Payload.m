@@ -8,6 +8,7 @@
 
 #import "Payload.h"
 #import "Key.h"
+#import "Commit.h"  
 #import "DecryptedObjectCache.h"
 #import "CryptoService.h"
 #import "TresorDaoCategories.h"
@@ -19,10 +20,10 @@
 
 @dynamic createts;
 @dynamic encryptedpayload;
-@dynamic vault;
 @dynamic cryptoalgorithm;
 @dynamic cryptoiv;
 @dynamic key;
+@dynamic commits;
 
 #pragma mark dao extension
 

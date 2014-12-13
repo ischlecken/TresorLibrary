@@ -7,8 +7,6 @@
 //
 
 #import "MasterKey.h"
-#import "Vault.h"
-
 
 @implementation MasterKey
 
@@ -16,11 +14,11 @@
 @dynamic cryptoalgorithm;
 @dynamic encryptedkey;
 @dynamic cryptoiv;
-@dynamic vault;
 
 @dynamic lockts;
 @dynamic lockcount;
 @dynamic failedauthentications;
 @dynamic authentication;
+@dynamic keys;
 
 @end

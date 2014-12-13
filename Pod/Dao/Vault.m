@@ -8,8 +8,8 @@
 #import "Macros.h"
 #import "Vault.h"
 #import "Commit.h"
+#import "MasterKey.h"
 #import "TresorDaoCategories.h"
- 
 #import "TresorError.h"
 
 @interface Vault ()
@@ -27,9 +27,7 @@
 @dynamic vaultname;
 @dynamic vaulticon;
 @dynamic commit;
-@dynamic newcommit;
-@dynamic payloads;
-@dynamic masterkeys;
+@dynamic nextcommitobjectid;
 
 /**
  *
@@ -75,14 +73,11 @@
   if( removedPayload && [self->_newPayloads containsObject:removedPayload] )
   { [self->_intermediatePayloads addObject:removedPayload];
     
-    removedPayload.vault = nil;
-    
     [self->_newPayloads removeObject:removedPayload];
   } /* of if */
   
   if( ![self->_newPayloads containsObject:payload] )
-  { payload.vault = self;
-    
+  {
     [self->_newPayloads addObject:payload];
   } /* of if */
 }
@@ -100,7 +95,6 @@
       if( [[p uniqueObjectId] isEqualToString:removedPayloadObjectId] )
       { [self->_intermediatePayloads addObject:p];
         
-        p.vault = nil;
         foundPayload = p;
         break;
       } /* of if */
@@ -110,8 +104,7 @@
   } /* of if */
   
   if( ![self->_newPayloads containsObject:payload] )
-  { payload.vault = self;
-    [self->_newPayloads addObject:payload];
+  { [self->_newPayloads addObject:payload];
   } /* of if */
 }
 
@@ -121,7 +114,7 @@
  *
  */
 -(Commit*) nextCommit:(NSError**)error
-{ Commit* result = self.newcommit;
+{ Commit* result = (Commit*)[_MOC loadObjectWithObjectID:self.nextcommitobjectid andError:error];
   
   _RESETERROR;
   
@@ -129,7 +122,7 @@
   { result = [Commit commitObjectUsingParentCommit:self.commit andError:error];
     
     if( result )
-      self.newcommit = result;
+      self.nextcommitobjectid = [result uniqueObjectId];
   } /* of if */
   
   return result;
@@ -144,19 +137,14 @@
   
   _RESETERROR;
   
-  Commit* nextCommit = self.newcommit;
+  Commit* nextCommit = (Commit*)[_MOC loadObjectWithObjectID:self.nextcommitobjectid andError:error];
   if( nextCommit!=nil )
-  { [self->_intermediatePayloads addObjectsFromArray:self->_newPayloads];
-    
-    for( Payload* p in self->_intermediatePayloads )
+  { for( Payload* p in nextCommit.payloads )
+    { [_MOC deleteObject:p.key];
       [_MOC deleteObject:p];
+    } /* of for */
     
-  cleanup:
-
-    [self->_newPayloads          removeAllObjects];
-    [self->_intermediatePayloads removeAllObjects];
-    
-    [_MOC deleteObject:self.newcommit];
+    [_MOC deleteObject:nextCommit];
     [_MOC save:error];
   } /* of if */
   else if( error )
@@ -183,7 +171,7 @@
     [self->_newPayloads removeAllObjects];
     [self->_intermediatePayloads removeAllObjects];
     
-    self.newcommit = nil;
+    self.nextcommitobjectid = nil;
   } /* of if */
 }
 
@@ -308,10 +296,18 @@
   
   if( vault && (allCommits=[vault allCommits:error]) )
   { for( Commit* c in allCommits )
+    {
+      for( Payload* p in c.payloads )
+      {
+        for( MasterKey* mk in p.key.masterkeys )
+          [_MOC deleteObject:mk];
+        
+        [_MOC deleteObject:p.key];
+        [_MOC deleteObject:p];
+      } /* of for */
+      
       [_MOC deleteObject:c];
-    
-    for( Payload* p in vault.payloads )
-      [_MOC deleteObject:p];
+    } /* of for */
     
     [_MOC deleteObject:vault];
     

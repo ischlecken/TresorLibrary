@@ -21,7 +21,7 @@
 #import "TresorModel.h"
 #import "TresorError.h"
 #import "TresorDaoCategories.h"
- 
+#import "Payload.h"
 
 @interface Commit ()
 {
@@ -38,6 +38,7 @@
 @dynamic payloadobjectid;
 @dynamic vault;
 @dynamic newvault;
+@dynamic payloads;
 
 #pragma mark dao extension
 

@@ -8,6 +8,7 @@
 
 #import "Key.h"
 #import "Payload.h"
+#import "MasterKey.h"
 #import "TresorUtilConstant.h"
 #import "NSString+Crypto.h"
 
@@ -18,6 +19,7 @@
 @dynamic cryptoiv;
 @dynamic encryptedkey;
 @dynamic payload;
+@dynamic masterkeys;
 
 #pragma mark dao extension
 
