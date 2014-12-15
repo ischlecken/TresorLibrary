@@ -5,9 +5,8 @@
 //  Created by Feldmaus on 11.12.14.
 //
 //
-
-#import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
+#import "PromiseKit.h"
 
 @class Key;
 
@@ -23,6 +22,10 @@
 @property (nonatomic, retain) NSNumber* failedauthentications;
 @property (nonatomic, retain) NSString* authentication;
 
+@property (nonatomic, retain) NSString* kdfsalt;
+@property (nonatomic, retain) NSString* kdf;
+@property (nonatomic, retain) NSNumber* kdfiterations;
+
 @property (nonatomic, retain) NSSet*    keys;
 
 @end
@@ -34,6 +37,7 @@
 -(void)addKeys:(NSSet*)values;
 -(void)removeKeys:(NSSet*)values;
 
++(PMKPromise*) masterKeyWithPin:(NSString*)pin;
 @end
 
 /**
