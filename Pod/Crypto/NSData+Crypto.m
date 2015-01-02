@@ -15,6 +15,7 @@
  */
 #import "NSData+Crypto.h"
 #import "CryptoError.h"
+#import "Macros.h"
 
 #include "md5.h"
 #include "sha1.h"
@@ -397,5 +398,45 @@ cleanUp:
   
   return result;
 }
+
+/**
+ *
+ */
++(PMKPromise*) generatePINWithLength:(NSUInteger)pinLength usingIterations:(NSUInteger)iterations
+{ _NSLOG_SELECTOR;
+  
+  PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
+  {
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^
+    { _NSLOG(@"generatePINWithLength.start");
+      
+      NSData*    passwordData = [NSData dataWithRandom:pinLength];
+      NSData*    salt         = [NSData dataWithRandom:pinLength];
+      NSUInteger iter         = iterations;
+      NSError*   error        = nil;
+      
+#if TARGET_IPHONE_SIMULATOR
+      iter *= 4;
+#endif
+      
+      NSData*   derivedKey = [passwordData deriveKeyWithAlgorithm:deriveKeyAlgoPBKDF2CC
+                                                       withLength:pinLength
+                                                        usingSalt:salt
+                                                    andIterations:iter
+                                                            error:&error];
+      
+      NSString* pin        = [[derivedKey hexStringValue] substringToIndex:pinLength];
+      _NSLOG(@"generatePINWithLength.stop:<%@>",pin);
+      
+      if( derivedKey )
+        fulfill(pin);
+      else
+        reject(error);
+    });
+  }];
+  
+  return result;
+}
+
 @end
 /*====================================================END-OF-FILE==========================================================*/

@@ -14,6 +14,8 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
+#import "PromiseKit.h"
+
 /* CC == CommonCrypto */
 typedef enum 
 { hashAlgoMD5      = 0,
@@ -61,5 +63,8 @@ typedef enum
 +(NSData*)      dataWithHexString:(const char*)hexString;
 +(NSData*)      dataWithUTF8String:(NSString*)string;
 +(NSData*)      dataWithRandom:(NSUInteger)length;
+
++(PMKPromise*)  generatePINWithLength:(NSUInteger)pinLength usingIterations:(NSUInteger)iterations;
+
 @end
 /*==================================END-OF-FILE==========================================*/
