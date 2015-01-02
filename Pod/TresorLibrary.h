@@ -54,6 +54,7 @@
 #import "NSSensitiveData.h"
 #import "NSString+Crypto.h"
 #import "NSString+Date.h"
+#import "NSString+Check.h"
 #import "WipeString.h"
 
 #import "UIImage+ImageEffects.h"
