@@ -64,7 +64,7 @@ typedef enum
 +(NSData*)      dataWithUTF8String:(NSString*)string;
 +(NSData*)      dataWithRandom:(NSUInteger)length;
 
-+(PMKPromise*)  generatePINWithLength:(NSUInteger)pinLength usingIterations:(NSUInteger)iterations;
++(PMKPromise*)  generatePINWithLength:(NSUInteger)pinLength;
 
 @end
 /*==================================END-OF-FILE==========================================*/

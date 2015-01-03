@@ -402,7 +402,7 @@ cleanUp:
 /**
  *
  */
-+(PMKPromise*) generatePINWithLength:(NSUInteger)pinLength usingIterations:(NSUInteger)iterations
++(PMKPromise*) generatePINWithLength:(NSUInteger)pinLength
 { _NSLOG_SELECTOR;
   
   PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
@@ -412,7 +412,7 @@ cleanUp:
       
       NSData*    passwordData = [NSData dataWithRandom:pinLength];
       NSData*    salt         = [NSData dataWithRandom:pinLength];
-      NSUInteger iter         = iterations;
+      NSUInteger iter         = 2000000;
       NSError*   error        = nil;
       
 #if TARGET_IPHONE_SIMULATOR
@@ -426,10 +426,10 @@ cleanUp:
                                                             error:&error];
       
       NSString* pin        = [[derivedKey hexStringValue] substringToIndex:pinLength];
-      _NSLOG(@"generatePINWithLength.stop:<%@>",pin);
+      _NSLOG(@"generatePINWithLength.stop:");
       
       if( derivedKey )
-        fulfill(pin);
+        fulfill(PMKManifold(pin,[NSNumber numberWithUnsignedInteger:iter],salt,@"PBKDF2CC"));
       else
         reject(error);
     });
