@@ -9,6 +9,7 @@
 #import "PromiseKit.h"
 
 @class Key;
+@class Vault;
 
 @interface MasterKey : NSManagedObject
 
@@ -28,6 +29,7 @@
 
 @property (nonatomic, retain) NSSet*    keys;
 
+@property (nonatomic, retain) Vault*    vault;
 @end
 
 @interface MasterKey (CoreDataGeneratedAccessors)
@@ -37,7 +39,7 @@
 -(void)addKeys:(NSSet*)values;
 -(void)removeKeys:(NSSet*)values;
 
-+(PMKPromise*) masterKeyWithPin:(NSString*)pin;
++(PMKPromise*) masterKeyWithPin:(NSString*)pin andPUK:(NSString*)puk;
 @end
 
 /**

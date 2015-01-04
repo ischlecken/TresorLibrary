@@ -25,6 +25,9 @@
 #include "base64.h"
 #include "commoncrypto.h"
 
+@implementation GeneratedPIN
+@end
+
 @implementation NSData(TresorCrypto)
 
 /**
@@ -429,7 +432,15 @@ cleanUp:
       _NSLOG(@"generatePINWithLength.stop:");
       
       if( derivedKey )
-        fulfill(PMKManifold(pin,[NSNumber numberWithUnsignedInteger:iter],salt,@"PBKDF2CC"));
+      { GeneratedPIN* result = [GeneratedPIN new];
+        
+        result.pin        = pin;
+        result.salt       = salt;
+        result.algorithm  = @"PBKDF2CC";
+        result.iterations = iter;
+        
+        fulfill(result);
+      } /* of if */
       else
         reject(error);
     });

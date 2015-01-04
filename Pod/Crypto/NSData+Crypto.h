@@ -44,6 +44,12 @@ typedef enum
   deriveKeyAlgoPBKDF2CC = 1
 } TresorCryptoDeriveKeyAlgorithmT;
 
+@interface GeneratedPIN : NSObject 
+@property NSString*  pin;
+@property NSData*    salt;
+@property NSUInteger iterations;
+@property NSString*  algorithm;
+@end
 
 @interface NSData(TresorCrypto)
 -(NSData*)      hashWithAlgorithm:(TresorCryptoHashAlgorithmT)algorithm error:(NSError **)outError;

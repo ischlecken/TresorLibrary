@@ -32,13 +32,14 @@
         <attribute name="cryptoalgorithm" attributeType="String" syncable="YES"/>
         <attribute name="cryptoiv" attributeType="String" syncable="YES"/>
         <attribute name="encryptedkey" attributeType="Binary" syncable="YES"/>
-        <attribute name="failedauthentications" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="kdf" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="kdfiterations" optional="YES" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
-        <attribute name="kdfsalt" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="lockcount" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
-        <attribute name="lockts" attributeType="Date" syncable="YES"/>
+        <attribute name="failedauthentications" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="kdf" attributeType="String" syncable="YES"/>
+        <attribute name="kdfiterations" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
+        <attribute name="kdfsalt" attributeType="String" syncable="YES"/>
+        <attribute name="lockcount" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="lockts" optional="YES" attributeType="Date" syncable="YES"/>
         <relationship name="keys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Key" inverseName="masterkeys" inverseEntity="Key" syncable="YES"/>
+        <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="masterkeys" inverseEntity="Vault" syncable="YES"/>
     </entity>
     <entity name="Payload" representedClassName="Payload" syncable="YES">
         <attribute name="createts" optional="YES" attributeType="Date" syncable="YES"/>
@@ -56,13 +57,14 @@
         <attribute name="vaultname" attributeType="String" syncable="YES"/>
         <attribute name="vaulttype" optional="YES" attributeType="String" maxValueString="32" syncable="YES"/>
         <relationship name="commit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Commit" inverseName="vault" inverseEntity="Commit" syncable="YES"/>
+        <relationship name="masterkeys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MasterKey" inverseName="vault" inverseEntity="MasterKey" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Audit" positionX="-486" positionY="236" width="128" height="133"/>
+        <element name="Audit" positionX="-477" positionY="288" width="128" height="133"/>
         <element name="Commit" positionX="-279" positionY="29" width="128" height="133"/>
         <element name="Key" positionX="81" positionY="29" width="128" height="133"/>
-        <element name="MasterKey" positionX="286" positionY="-36" width="128" height="223"/>
+        <element name="MasterKey" positionX="286" positionY="5" width="128" height="238"/>
         <element name="Payload" positionX="-90" positionY="29" width="128" height="133"/>
-        <element name="Vault" positionX="-486" positionY="14" width="128" height="148"/>
+        <element name="Vault" positionX="-477" positionY="81" width="128" height="163"/>
     </elements>
 </model>

@@ -68,9 +68,8 @@
       goto cleanUp;
     
     for( int i=0;i<len/2;i++ )
-    { digit[0]     = hexString[2*i];
-      digit[1]     = hexString[2*i+1];
-      
+    { digit[0]  = hexString[2*i];
+      digit[1]  = hexString[2*i+1];
       buffer[i] = (unsigned char)strtol((char*)digit, NULL, 16);
     } /* of for */
     

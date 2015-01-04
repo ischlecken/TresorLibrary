@@ -13,6 +13,10 @@
 #import "TresorError.h"
 #import "TresorUtilError.h"
 
+@implementation VaultParameter
+
+@end
+
 @interface Vault ()
 @end
 
@@ -25,6 +29,7 @@
 @dynamic vaulticon;
 @dynamic commit;
 @dynamic nextcommitoid;
+@dynamic masterkeys;
 
 /**
  *
@@ -239,14 +244,30 @@
 /**
  *
  */
-+(Vault*) vaultObjectWithName:(NSString*)vaultName andType:(NSString*)vaultType andError:(NSError**)error
-{ Vault* result = [NSEntityDescription insertNewObjectForEntityForName:@"Vault" inManagedObjectContext:_MOC];
++(PMKPromise*) vaultObjectWithParameter:(VaultParameter*)parameter
+{ PMKPromise* result = nil;
   
-  result.vaultname = vaultName;
-  result.vaulttype = vaultType;
-  result.createts  = [NSDate date];
+  if( parameter && parameter.pin && parameter.puk )
+  { result = [MasterKey masterKeyWithPin:parameter.pin andPUK:parameter.puk]
+    .then(^(MasterKey* pin,MasterKey* puk)
+    { NSError* error  = nil;
+      Vault*   result = [NSEntityDescription insertNewObjectForEntityForName:@"Vault" inManagedObjectContext:_MOC];
+      
+      result.createts  = [NSDate date];
+      result.vaultname = parameter.name;
+      result.vaulttype = parameter.type;
+      
+      if( parameter.icon )
+        result.vaulticon = UIImagePNGRepresentation(parameter.icon);
+      
+      pin.vault = result;
+      puk.vault = result;
+      
+      return [_MOC save:&error] ? (id) result : (id) error;
+    });
+  } /* of if */
   
-  _MOC_SAVERETURN;
+  return result;
 }
 
 /**

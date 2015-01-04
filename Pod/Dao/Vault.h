@@ -11,6 +11,20 @@
 #import "TresorDaoProtokols.h"
 
 @class Commit;
+@class MasterKey;
+
+@interface VaultParameter : NSObject
+
+@property(strong,nonatomic) NSString*  name;
+@property(assign,nonatomic) NSString*  type;
+@property(strong,nonatomic) UIImage*   icon;
+@property(strong,nonatomic) NSString*  pin;
+@property(strong,nonatomic) NSString*  puk;
+@property(strong,nonatomic) NSString*  kdfAlgorithm;
+@property(assign,nonatomic) NSUInteger kdfIterations;
+@property(strong,nonatomic) NSData*    kdfSalt;
+@end
+
 
 @interface Vault : NSManagedObject <Visit>
 
@@ -24,17 +38,29 @@
 @property (nonatomic, retain) NSString* nextcommitoid;
 
 @property (nonatomic, retain) Commit*   commit;
+
+@property (nonatomic, retain) NSSet*    masterkeys;
+
 #pragma mark dao extension
 
--(Commit*)  nextCommit;
--(Commit*)  useOrCreateNextCommit:(NSError**)error;
--(BOOL)     cancelNextCommit:(NSError**)error;
+-(Commit*)     nextCommit;
+-(Commit*)     useOrCreateNextCommit:(NSError**)error;
+-(BOOL)        cancelNextCommit:(NSError**)error;
 
--(NSArray*) allCommits:(NSError**)error;
+-(NSArray*)    allCommits:(NSError**)error;
 
-+(Vault*)   vaultObjectWithName:(NSString*)vaultName andType:(NSString*)vaultType andError:(NSError**)error;
-+(Vault*)   findVaultByName:(NSString*)vaultName andError:(NSError**)error;
-+(NSArray*) allVaults:(NSError**)error;
-+(BOOL)     deleteVault:(Vault*)vault andError:(NSError**)error;
++(PMKPromise*) vaultObjectWithParameter:(VaultParameter*)parameter;
++(Vault*)      findVaultByName:(NSString*)vaultName andError:(NSError**)error;
++(NSArray*)    allVaults:(NSError**)error;
++(BOOL)        deleteVault:(Vault*)vault andError:(NSError**)error;
+
+@end
+
+@interface Vault (CoreDataGeneratedAccessors)
+
+-(void)addMasterKeysObject:(MasterKey*)value;
+-(void)removeMasterKeysObject:(MasterKey*)value;
+-(void)addMasterKeys:(NSSet*)values;
+-(void)removeMasterKeys:(NSSet*)values;
 
 @end
