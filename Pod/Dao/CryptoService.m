@@ -23,7 +23,7 @@
 #import "JSONModel.h"
 #import "NSString+Date.h"
 #import "NSData+Crypto.h"
-#import "TresorUtilConstant.h"
+#import "TresorAlgorithmInfo.h"
 #import "NSString+Crypto.h"
 
 typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
@@ -71,7 +71,7 @@ typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
   if( payload && keyForPayload )
   {
 #ifdef _USE_CRYPTO
-    VaultAlgorithmT vat               = getVaultAlgorithm(keyForPayload.payloadalgorithm);
+    TresorAlgorithmT vat               = getVaultAlgorithm(keyForPayload.payloadalgorithm);
     AlgorithmInfoT  vai               = VaultAlgorithmInfo[vat];
     NSData*         decryptedPayload  = [payload decryptWithAlgorithm:vai.cryptoAlgorithm usingKey:decryptedKey andIV:[keyForPayload.payloadiv hexString2RawValue] error:error];
 #else
@@ -190,10 +190,10 @@ typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
     if( rawPayload )
     {
 #ifdef _USE_CRYPTO
-      VaultAlgorithmT  vat        = vaultAES256;
+      TresorAlgorithmT  vat        = vaultAES256;
       AlgorithmInfoT   vai        = VaultAlgorithmInfo[vat];
       NSString*        payloadIV  = [[NSData dataWithRandom:vai.keySize] hexStringValue];
-      VaultAlgorithmT  payloadVAT = getVaultAlgorithm(keyForPayload.payloadalgorithm);
+      TresorAlgorithmT  payloadVAT = getVaultAlgorithm(keyForPayload.payloadalgorithm);
       AlgorithmInfoT   payloadVAI = VaultAlgorithmInfo[payloadVAT];
 
       result = [rawPayload encryptWithAlgorithm:payloadVAI.cryptoAlgorithm usingKey:decryptedKey andIV:[payloadIV hexString2RawValue] error:error];

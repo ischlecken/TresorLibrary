@@ -22,7 +22,7 @@
 /**
  *
  */
--(NSData*) hashWithAlgorithm:(TresorCryptoHashAlgorithmT) algorithm error:(NSError **)outError
+-(NSData*) hashWithAlgorithm:(TresorAlgorithmInfo*) algorithm error:(NSError **)outError
 { NSData* result = [[NSData dataWithBytes:[self UTF8String] length:[self length]] hashWithAlgorithm:algorithm error:outError];
   
   return result;
@@ -31,7 +31,7 @@
 /**
  *
  */
--(NSData*) encryptWithAlgorithm:(TresorCryptoAlgorithmT) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
+-(NSData*) encryptWithAlgorithm:(TresorAlgorithmInfo*) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
 { NSData* result = [[NSData dataWithBytes:[self UTF8String] length:[self length]] encryptWithAlgorithm:algorithm usingKey:key andIV:iv error:outError];
   
   return result;
@@ -40,7 +40,7 @@
 /**
  *
  */
--(NSData*) decryptWithAlgorithm:(TresorCryptoAlgorithmT) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
+-(NSData*) decryptWithAlgorithm:(TresorAlgorithmInfo*) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
 { NSData* result = [[NSData dataWithBytes:[self UTF8String] length:[self length]] decryptWithAlgorithm:algorithm usingKey:key andIV:iv error:outError];
   
   return result; 

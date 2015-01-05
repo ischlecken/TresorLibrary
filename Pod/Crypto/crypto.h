@@ -189,8 +189,8 @@
 #define BLOWFISH_BLOCK_SIZE  8
 #define BLOWFISH56_KEY_SIZE 56
 
-#define TWOFISH_BLOCK_SIZE       16
-#define TWOFISH_KEY_SIZE         32
+#define TWOFISH_BLOCK_SIZE  16
+#define TWOFISH_KEY_SIZE    32
 
 #endif
 /*============================================================================END-OF-FILE============================================================================*/

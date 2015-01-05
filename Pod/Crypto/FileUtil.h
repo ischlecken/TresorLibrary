@@ -14,6 +14,7 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #import "NSData+Crypto.h"
+#import "TresorAlgorithmInfo.h"
 
 @protocol WipeFileDelegate <NSObject>
 -(BOOL) wipeStatus:(int)state pass:(int)pass actualBytes:(int)a fileSize:(int)s;
@@ -33,7 +34,7 @@
 -(NSError*)        copyIfNoExists:(NSString*)fileName;
 -(BOOL)            wipeFile:(NSString*)fileName pass:(int)pass usingDelegate:(id<WipeFileDelegate>)delegate didFailWithError:(NSError**)error;
 -(BOOL)            wipeFile:(NSString*)fileName usingDelegate:(id<WipeFileDelegate>)delegate didFailWithError:(NSError**)error;
--(NSData*)         hash:(NSString*)fileName withAlgorithm:(TresorCryptoHashAlgorithmT)algorithm error:(NSError **)outError;
+-(NSData*)         hash:(NSString*)fileName withAlgorithm:(TresorAlgorithmInfo*)algorithm error:(NSError **)outError;
 +(TresorFileUtil*) sharedInstance;
 
 @end

@@ -13,36 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-
 #import "PromiseKit.h"
-
-/* CC == CommonCrypto */
-typedef enum 
-{ hashAlgoMD5      = 0,
-  hashAlgoMD5CC    = 1,
-  hashAlgoSHA256   = 2,
-  hashAlgoSHA256CC = 3,
-  hashAlgoSHA512   = 4,
-  hashAlgoSHA512CC = 5,
-  hashAlgoSHA1     = 6,
-  hashAlgoSHA1CC   = 7
-} TresorCryptoHashAlgorithmT;
-
-typedef enum 
-{ cryptAlgoAES128     = 0,
-  cryptAlgoAES128CC   = 1,
-  cryptAlgoAES192     = 2,
-  cryptAlgoAES192CC   = 3,
-  cryptAlgoAES256     = 4,
-  cryptAlgoAES256CC   = 5,
-  cryptAlgoCASTCC     = 6,
-  cryptAlgoTWOFISH256 = 7
-} TresorCryptoAlgorithmT;
-
-typedef enum 
-{ deriveKeyAlgoPBKDF2   = 0,
-  deriveKeyAlgoPBKDF2CC = 1
-} TresorCryptoDeriveKeyAlgorithmT;
+#import "TresorAlgorithmInfo.h"
 
 @interface GeneratedPIN : NSObject 
 @property NSString*  pin;
@@ -52,11 +24,11 @@ typedef enum
 @end
 
 @interface NSData(TresorCrypto)
--(NSData*)      hashWithAlgorithm:(TresorCryptoHashAlgorithmT)algorithm error:(NSError **)outError;
--(NSData*)      encryptWithAlgorithm:(TresorCryptoAlgorithmT)algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError;
--(NSData*)      decryptWithAlgorithm:(TresorCryptoAlgorithmT)algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError;
+-(NSData*)      hashWithAlgorithm:(TresorAlgorithmInfo*)algorithm error:(NSError **)outError;
+-(NSData*)      encryptWithAlgorithm:(TresorAlgorithmInfo*)algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError;
+-(NSData*)      decryptWithAlgorithm:(TresorAlgorithmInfo*)algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError;
 
--(NSData*)      deriveKeyWithAlgorithm:(TresorCryptoDeriveKeyAlgorithmT)algorithm withLength:(NSUInteger)keyLength usingSalt:(NSData*)salt andIterations:(NSUInteger)iter error:(NSError **)outError;
+-(NSData*)      deriveKeyWithAlgorithm:(TresorAlgorithmInfo*)algorithm withLength:(NSUInteger)keyLength usingSalt:(NSData*)salt andIterations:(NSUInteger)iter error:(NSError **)outError;
 
 -(NSData*)      mirror;
 

@@ -14,7 +14,7 @@
 #import "TresorDaoCategories.h"
 #import "TresorModel.h"
 #import "NSString+Crypto.h"
-#import "TresorUtilConstant.h"
+#import "TresorAlgorithmInfo.h"
 
 @implementation Payload
 
@@ -126,17 +126,16 @@
  *
  */
 +(Payload*) payloadWithRandomKey:(NSError**)error
-{ Payload*        result = nil;
-  VaultAlgorithmT vat    = vaultAES256;
-  AlgorithmInfoT  vai    = VaultAlgorithmInfo[vat];
-  Key*            key    = [Key keyWithRandomKey:_DUMMYPASSWORD andKeySize:vai.keySize andError:error];
+{ Payload*              result = nil;
+  TresorAlgorithmInfo*  vai    = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
+  Key*                  key    = [Key keyWithRandomKey:_DUMMYPASSWORD andKeySize:vai.keySize andError:error];
   
   if( key )
   { result = [NSEntityDescription insertNewObjectForEntityForName:@"Payload" inManagedObjectContext:_MOC];
   
     result.createts         = [NSDate date];
     result.cryptoiv         = [[NSData dataWithRandom:vai.blockSize] hexStringValue];
-    result.cryptoalgorithm  = VaultAlgorithmString[vat];
+    result.cryptoalgorithm  = vai.name;
     
     key.payload = result;
   } /* of if */

@@ -13,21 +13,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
-
 #import "NSData+Crypto.h"
+#import "TresorAlgorithmInfo.h"
 
-
-typedef enum
+typedef NS_ENUM(UInt8,TresorCryptoPasswordT)
 { NSStringPasswordDigit = 0,
   NSStringPasswordAlpha = 1,
   NSStringPasswordAlnum = 2
-} TresorCryptoPasswordT;
+};
 
 @interface NSString(TresorCrypto)
--(NSData*)   hashWithAlgorithm:(TresorCryptoHashAlgorithmT) algorithm error:(NSError **)outError;
+-(NSData*)   hashWithAlgorithm:(TresorAlgorithmInfo*) algorithm error:(NSError **)outError;
 
--(NSData*)   encryptWithAlgorithm:(TresorCryptoAlgorithmT) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError;
--(NSData*)   decryptWithAlgorithm:(TresorCryptoAlgorithmT) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError;
+-(NSData*)   encryptWithAlgorithm:(TresorAlgorithmInfo*) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError;
+-(NSData*)   decryptWithAlgorithm:(TresorAlgorithmInfo*) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError;
 
 -(NSData*)   hexString2RawValue;
 

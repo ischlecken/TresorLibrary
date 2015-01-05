@@ -9,7 +9,7 @@
 #import "Key.h"
 #import "Payload.h"
 #import "MasterKey.h"
-#import "TresorUtilConstant.h"
+#import "TresorAlgorithmInfo.h"
 #import "NSString+Crypto.h"
 
 @implementation Key
@@ -54,14 +54,13 @@
 +(Key*) keyWithRandomKey:(NSData*)passwordKey andKeySize:(NSUInteger)keySize andError:(NSError**)error
 { Key* result = [NSEntityDescription insertNewObjectForEntityForName:@"Key" inManagedObjectContext:_MOC];
   
-  VaultAlgorithmT vat          = vaultAES256;
-  AlgorithmInfoT  vai          = VaultAlgorithmInfo[vat];
-  NSData*         decryptedKey = [NSData dataWithRandom:keySize];
+  TresorAlgorithmInfo*  vai          = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
+  NSData*               decryptedKey = [NSData dataWithRandom:keySize];
   
   result.createts         = [NSDate date];
   result.cryptoiv         = [[NSData dataWithRandom:vai.blockSize] hexStringValue];
-  result.cryptoalgorithm  = VaultAlgorithmString[vat];
-  result.encryptedkey     = [decryptedKey encryptWithAlgorithm:vai.cryptoAlgorithm usingKey:passwordKey andIV:[result.cryptoiv hexString2RawValue] error:error];
+  result.cryptoalgorithm  = vai.name;
+  result.encryptedkey     = [decryptedKey encryptWithAlgorithm:vai usingKey:passwordKey andIV:[result.cryptoiv hexString2RawValue] error:error];
   
   _MOC_SAVERETURN;
 }

@@ -25,6 +25,15 @@
 #include "base64.h"
 #include "commoncrypto.h"
 
+typedef NS_ENUM(UInt8, CryptoTagTypes)
+{ CryptoTagDummy           =0,
+  CryptoTagPayloadClassName=1,
+  CryptoTagPayload         =2,
+  CryptoTagPayloadHash     =3,
+  CryptoTagPayloadPadding  =4
+};
+
+
 @implementation GeneratedPIN
 @end
 
@@ -33,52 +42,52 @@
 /**
  *
  */
--(NSData*) hashWithAlgorithm:(TresorCryptoHashAlgorithmT)algorithm error:(NSError **)outError
+-(NSData*) hashWithAlgorithm:(TresorAlgorithmInfo*)algorithm error:(NSError **)outError
 { BufferT   data;
   NSData*   result          = nil;
   int       internalErrCode = 0;
   
   buffer_init(&data,(unsigned int)[self length],(unsigned char*)[self bytes]);
   
-  switch( algorithm )
-  { case hashAlgoMD5:
-    case hashAlgoMD5CC:
+  switch( algorithm.type )
+  { case tresorAlgorithmMD5:
+    case tresorAlgorithmMD5CC:
       { BUFFER_T(MD5_DIGEST_SIZE,digest);
         
-        internalErrCode = CommonCryptoMD5(&data,(BufferT*)&digest, algorithm==hashAlgoMD5CC );
+        internalErrCode = CommonCryptoMD5(&data,(BufferT*)&digest, algorithm.type==tresorAlgorithmMD5CC );
         
         CRYPTO_CHECK_ERROR( internalErrCode!=EXIT_SUCCESS,CryptoErrorHash,@"CommonCryptoMD5 failed",internalErrCode );
         
         result = [[NSData alloc] initWithBytes:digest.data length:digest.length];
       }
       break;
-    case hashAlgoSHA1:
-    case hashAlgoSHA1CC:
+    case tresorAlgorithmSHA1:
+    case tresorAlgorithmSHA1CC:
       { BUFFER_T(SHA1_DIGEST_SIZE,digest);
         
-        internalErrCode = CommonCryptoSHA1(&data,(BufferT*)&digest, algorithm==hashAlgoSHA1CC);
+        internalErrCode = CommonCryptoSHA1(&data,(BufferT*)&digest, algorithm.type==tresorAlgorithmSHA1CC);
         
         CRYPTO_CHECK_ERROR( internalErrCode!=EXIT_SUCCESS,CryptoErrorHash,@"CommonCryptoSHA1 failed",internalErrCode );
         
         result = [[NSData alloc] initWithBytes:digest.data length:digest.length];
       }
       break;
-    case hashAlgoSHA256:
-    case hashAlgoSHA256CC:
+    case tresorAlgorithmSHA256:
+    case tresorAlgorithmSHA256CC:
       { BUFFER_T(SHA256_DIGEST_SIZE,digest);
         
-        internalErrCode = CommonCryptoSHA256(&data,(BufferT*)&digest, algorithm==hashAlgoSHA256CC);
+        internalErrCode = CommonCryptoSHA256(&data,(BufferT*)&digest, algorithm.type==tresorAlgorithmSHA256CC);
         
         CRYPTO_CHECK_ERROR( internalErrCode!=EXIT_SUCCESS,CryptoErrorHash,@"CommonCryptoSHA256 failed",internalErrCode );
         
         result = [[NSData alloc] initWithBytes:digest.data length:digest.length];
       }
       break;
-    case hashAlgoSHA512:
-    case hashAlgoSHA512CC:
+    case tresorAlgorithmSHA512:
+    case tresorAlgorithmSHA512CC:
       { BUFFER_T(SHA512_DIGEST_SIZE,digest);
         
-        internalErrCode = CommonCryptoSHA512(&data,(BufferT*)&digest, algorithm==hashAlgoSHA512CC);
+        internalErrCode = CommonCryptoSHA512(&data,(BufferT*)&digest, algorithm.type==tresorAlgorithmSHA512CC);
         
         CRYPTO_CHECK_ERROR( internalErrCode!=EXIT_SUCCESS,CryptoErrorHash,@"CommonCryptoSHA512 failed",internalErrCode );
         
@@ -97,7 +106,7 @@ cleanUp:
 /**
  *
  */
--(NSData*) encryptWithAlgorithm:(TresorCryptoAlgorithmT)algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
+-(NSData*) encryptWithAlgorithm:(TresorAlgorithmInfo*)algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
 { NSData*     result          = nil;
   int         internalErrCode = 0;
   BufferT*    cryptResult     = NULL;
@@ -108,25 +117,25 @@ cleanUp:
   int      (*cryptFkt)(BufferT*,BufferT*,BufferT*,BufferT*,bool) = NULL;
   unsigned blockSize = 0;
   
-  switch( algorithm )
-  { case cryptAlgoAES128CC:
-    case cryptAlgoAES192CC:
-    case cryptAlgoAES256CC:
+  switch( algorithm.type )
+  { case tresorAlgorithmAES128CC:
+    case tresorAlgorithmAES192CC:
+    case tresorAlgorithmAES256CC:
       useCommonCrypto = TRUE;
-    case cryptAlgoAES192:
-    case cryptAlgoAES256:
-    case cryptAlgoAES128:
-      blockSize       = AES_BLOCK_SIZE;
+    case tresorAlgorithmAES192:
+    case tresorAlgorithmAES256:
+    case tresorAlgorithmAES128:
+      blockSize       = algorithm.blockSize;
       cryptFkt        = CommonCryptoAES128Encrypt;
       break;
-    case cryptAlgoCASTCC:
+    case tresorAlgorithmCASTCC:
       useCommonCrypto = TRUE;
-      blockSize       = CAST_BLOCK_SIZE;
+      blockSize       = algorithm.blockSize;
       cryptFkt        = CommonCryptoCASTEncrypt;
       break;
-    case cryptAlgoTWOFISH256:
+    case tresorAlgorithmTwofish256:
       useCommonCrypto = FALSE;
-      blockSize       = TWOFISH_BLOCK_SIZE;
+      blockSize       = algorithm.blockSize;
       cryptFkt        = CommonCryptoTwofishEncrypt;
       break;
     default:
@@ -161,7 +170,7 @@ cleanUp:
 /**
  *
  */
-- (NSData*) decryptWithAlgorithm:(TresorCryptoAlgorithmT) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
+- (NSData*) decryptWithAlgorithm:(TresorAlgorithmInfo*) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
 { NSData*     result          = nil;
   BufferT*    decryptResult   = NULL;
   int         internalErrCode = 0;
@@ -172,25 +181,25 @@ cleanUp:
   int      (*decryptFkt)(BufferT*,BufferT*,BufferT*,BufferT*,bool) = NULL;
   unsigned blockSize = 0;
   
-  switch( algorithm )
-  { case cryptAlgoAES128CC:
-    case cryptAlgoAES192CC:
-    case cryptAlgoAES256CC:
+  switch( algorithm.type )
+  { case tresorAlgorithmAES128CC:
+    case tresorAlgorithmAES192CC:
+    case tresorAlgorithmAES256CC:
       useCommonCrypto = TRUE;
-    case cryptAlgoAES128:
-    case cryptAlgoAES192:
-    case cryptAlgoAES256:
-      blockSize       = AES_BLOCK_SIZE;
+    case tresorAlgorithmAES128:
+    case tresorAlgorithmAES192:
+    case tresorAlgorithmAES256:
+      blockSize       = algorithm.blockSize;
       decryptFkt      = CommonCryptoAES128Decrypt;
       break;
-    case cryptAlgoCASTCC:
+    case tresorAlgorithmCASTCC:
       useCommonCrypto = TRUE;
-      blockSize       = CAST_BLOCK_SIZE;
+      blockSize       = algorithm.blockSize;
       decryptFkt      = CommonCryptoCASTDecrypt;
       break;
-    case cryptAlgoTWOFISH256:
+    case tresorAlgorithmTwofish256:
       useCommonCrypto = FALSE;
-      blockSize       = TWOFISH_BLOCK_SIZE;
+      blockSize       = algorithm.blockSize;
       decryptFkt      = CommonCryptoTwofishDecrypt;
       break;
     default:
@@ -227,16 +236,16 @@ cleanUp:
 /**
  *
  */
--(NSData*)   deriveKeyWithAlgorithm:(TresorCryptoDeriveKeyAlgorithmT)algorithm withLength:(NSUInteger)keyLength usingSalt:(NSData*)salt andIterations:(NSUInteger)iter error:(NSError **)outError
+-(NSData*)   deriveKeyWithAlgorithm:(TresorAlgorithmInfo*)algorithm withLength:(NSUInteger)keyLength usingSalt:(NSData*)salt andIterations:(NSUInteger)iter error:(NSError **)outError
 { NSData*     result          = nil;
   BufferT*    keyResult       = NULL;
   int         internalErrCode = 0;
   
   CRYPTO_CHECK_ERROR( salt==nil || [salt length]==0,CryptoErrorIllegalArgument,@"salt should not be nil",0 );
   
-  switch( algorithm )
-  { case deriveKeyAlgoPBKDF2:
-    case deriveKeyAlgoPBKDF2CC:
+  switch( algorithm.type )
+  { case tresorAlgorithmPBKDF2:
+    case tresorAlgorithmPBKDF2CC:
     { BufferT  selfBuffer;
       BufferT  saltBuffer;
       int      keyResultLen = (unsigned int)keyLength;
@@ -247,7 +256,7 @@ cleanUp:
       buffer_init(&selfBuffer, (unsigned int)[self length], (unsigned char*)[self bytes]);
       buffer_init(&saltBuffer, (unsigned int)[salt length], (unsigned char*)[salt bytes]);
       
-      internalErrCode = CommonCryptoDeriveKey(&selfBuffer,&saltBuffer,keyResult,(unsigned int)iter,algorithm==deriveKeyAlgoPBKDF2CC);
+      internalErrCode = CommonCryptoDeriveKey(&selfBuffer,&saltBuffer,keyResult,(unsigned int)iter,algorithm.type==tresorAlgorithmPBKDF2CC);
       CRYPTO_CHECK_ERROR( internalErrCode!=EXIT_SUCCESS,CryptoErrorCipher,@"CommonCryptoDeriveKey failed",internalErrCode );
       
       result = [[NSData alloc] initWithBytes:keyResult->data length:keyResult->length];
@@ -422,7 +431,7 @@ cleanUp:
       iter *= 4;
 #endif
       
-      NSData*   derivedKey = [passwordData deriveKeyWithAlgorithm:deriveKeyAlgoPBKDF2CC
+      NSData*   derivedKey = [passwordData deriveKeyWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmPBKDF2CC]
                                                        withLength:pinLength
                                                         usingSalt:salt
                                                     andIterations:iter
@@ -449,5 +458,151 @@ cleanUp:
   return result;
 }
 
+#pragma mark payload encryption decryption
+#if 0
+/**
+ *
+ */
+-(NSData*) decryptPayloadUsingKey:(Key*)keyForPayload andDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error
+{ NSData* result = nil;
+  
+  if( payload && keyForPayload )
+  {
+#ifdef _USE_CRYPTO
+    TresorAlgorithmT vat               = getVaultAlgorithm(keyForPayload.payloadalgorithm);
+    AlgorithmInfoT  vai               = VaultAlgorithmInfo[vat];
+    NSData*         decryptedPayload  = [payload decryptWithAlgorithm:vai.cryptoAlgorithm usingKey:decryptedKey andIV:[keyForPayload.payloadiv hexString2RawValue] error:error];
+#else
+    NSData*         decryptedPayload  = payload;
+#endif
+    
+    if( decryptedPayload )
+    {
+      decryptedPayload = [decryptedPayload mirror];
+      
+#ifdef _USE_JSONMODEL
+      const void* rawData          = [decryptedPayload bytes];
+      NSUInteger  rawDataSize      = [decryptedPayload length];
+      NSUInteger  i                = 0;
+      NSString*   payloadClassName = nil;
+      NSData*     payloadData      = nil;
+      
+      while( i<rawDataSize )
+      { UInt32      tag     = CFSwapInt32LittleToHost( *((UInt32*)(rawData+i))                  );
+        UInt32      tagSize = CFSwapInt32LittleToHost( *((UInt32*)(rawData+i+1*sizeof(UInt32))) );
+        const void* tagData =                                     (rawData+i+2*sizeof(UInt32));
+        
+        //NSLog(@"tag[%d,%d]",(unsigned int)tag,(unsigned int)tagSize);
+        
+        if( tag==CryptoServiceTagPayloadClassName )
+          payloadClassName = [[NSString alloc] initWithBytes:tagData length:tagSize encoding:NSUTF8StringEncoding];
+        else if( tag==CryptoServiceTagPayload )
+          payloadData = [NSData dataWithBytes:tagData length:tagSize];
+        
+        i += tagSize+sizeof(UInt32)+sizeof(UInt32);
+      } /* of while */
+      
+      if( payloadClassName && payloadData )
+      { //NSLog(@"payloadClassName:%@ payloadData=<%@>",payloadClassName,[[NSString alloc] initWithData:payloadData encoding:NSUTF8StringEncoding]);
+        
+        Class    payloadClass = NSClassFromString(payloadClassName);
+        NSError* error        = nil;
+        
+        if( [payloadClass isSubclassOfClass:[NSString class]] )
+          result = [[NSString alloc] initWithData:payloadData encoding:NSUTF8StringEncoding];
+        else if( [payloadClass isSubclassOfClass:[JSONModel class]] )
+          result = [[payloadClass alloc] initWithData:payloadData error:&error];
+        else
+          result = payloadData;
+        
+        if( error )
+          NSLog(@"error=%@",error);
+      } /* of if */
+#else
+      result = [NSKeyedUnarchiver unarchiveObjectWithData:decryptedPayload];
+#endif
+      
+    } /* of if */
+  } /* of if */
+  
+  return result;
+}
+
+/**
+ *
+ */
++(void) addTag:(UInt32)tagType andData:(NSData*)tagData toResult:(NSMutableData*)result
+{ UInt32  tag     = CFSwapInt32HostToLittle( tagType        );
+  UInt32  tagSize = CFSwapInt32HostToLittle( (UInt32)tagData.length );
+  
+  [result appendBytes:&tag     length:sizeof(tag)];
+  [result appendBytes:&tagSize length:sizeof(tagSize)];
+  [result appendData:tagData];
+}
+
+/**
+ *
+ */
++(void) addTag:(UInt32)tagType andString:(NSString*)tagString toResult:(NSMutableData*)result
+{ NSData* tagData = [tagString dataUsingEncoding:NSUTF8StringEncoding];
+  
+  [CryptoService addTag:tagType andData:tagData toResult:result];
+}
+
+/**
+ *
+ */
++(NSData*) encryptPayload:(id)payloadObject usingKey:(Key*)keyForPayload andDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error
+{ NSData* result = nil;
+  
+  if( payloadObject )
+  { NSData* rawPayload = nil;
+    
+#ifdef _USE_JSONMODEL
+    NSMutableData* rw                          = [[NSMutableData alloc] initWithCapacity:1024];
+    Class          payloadObjectClass          = [payloadObject class];
+    NSString*      payloadStringRepresentation = [payloadObject description];
+    
+    if( [payloadObject isKindOfClass:[JSONModel class]] )
+      payloadStringRepresentation = [payloadObject toJSONString];
+    else if( [payloadObject isKindOfClass:[NSString class]] )
+    { payloadObjectClass = [NSString class];
+      
+      payloadStringRepresentation = (NSString*)payloadObject;
+    } /* of else if */
+    
+    if( payloadStringRepresentation==nil )
+      [NSException raise:@"EncryptPayloadException" format:@"could not serialize payloadObject"];
+    
+    //NSLog(@"payload[%@]:%@",payloadObjectClass,payloadStringRepresentation);
+    
+    [CryptoService addTag:CryptoServiceTagPayloadClassName andString:NSStringFromClass(payloadObjectClass) toResult:rw];
+    [CryptoService addTag:CryptoServiceTagPayload          andString:payloadStringRepresentation           toResult:rw];
+    [CryptoService addTag:CryptoServiceTagDummy            andData:[NSData dataWithRandom:63]              toResult:rw];
+    
+    rawPayload = [rw mirror];
+#else
+    rawPayload = [NSKeyedArchiver archivedDataWithRootObject:payloadObject];
+#endif
+    
+    if( rawPayload )
+    {
+#ifdef _USE_CRYPTO
+      TresorAlgorithmT  vat        = vaultAES256;
+      AlgorithmInfoT   vai        = VaultAlgorithmInfo[vat];
+      NSString*        payloadIV  = [[NSData dataWithRandom:vai.keySize] hexStringValue];
+      TresorAlgorithmT  payloadVAT = getVaultAlgorithm(keyForPayload.payloadalgorithm);
+      AlgorithmInfoT   payloadVAI = VaultAlgorithmInfo[payloadVAT];
+      
+      result = [rawPayload encryptWithAlgorithm:payloadVAI.cryptoAlgorithm usingKey:decryptedKey andIV:[payloadIV hexString2RawValue] error:error];
+#else
+      result = rawPayload;
+#endif
+    } /* of if */
+  } /* of if */
+  
+  return result;
+}
+#endif
 @end
 /*====================================================END-OF-FILE==========================================================*/

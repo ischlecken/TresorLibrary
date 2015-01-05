@@ -64,7 +64,7 @@
 #import "TresorConfig.h"
 #import "TresorDaoProtokols.h"
 #import "TresorDaoCategories.h"
-#import "TresorUtilConstant.h"
+#import "TresorAlgorithmInfo.h"
 #import "TresorUtil.h"
 #import "TresorModel.h"
 #import "TresorDefaults.h"

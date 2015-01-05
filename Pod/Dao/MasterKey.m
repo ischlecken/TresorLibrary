@@ -7,7 +7,7 @@
 //
 #import "MasterKey.h"
 #import "Vault.h"
-#import "TresorUtilConstant.h"
+#import "TresorAlgorithmInfo.h"
 #import "NSString+Crypto.h"
 #import "TresorModel.h"
 #import "Macros.h"
@@ -86,19 +86,19 @@ masterKeyPUK.kdf             = @"PBKDF2CC";
       NSError*                   error = nil;
       CreateMasterKeysParameter* cmkp  = nil;
       
-      { VaultAlgorithmT vat          = vaultAES256;
-        AlgorithmInfoT  vai          = VaultAlgorithmInfo[vat];
-        NSData*         pinData      = [pin hexString2RawValue];
-        NSData*         pukData      = [puk hexString2RawValue];
-        NSUInteger      keySize      = vai.keySize;
-        NSUInteger      iterations   = 2000000;
+      { TresorAlgorithmInfo*  encryptAlgo  = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
+        TresorAlgorithmInfo*  deriveAlgo   = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmPBKDF2CC];
+        NSData*               pinData      = [pin hexString2RawValue];
+        NSData*               pukData      = [puk hexString2RawValue];
+        NSUInteger            keySize      = encryptAlgo.keySize;
+        NSUInteger            iterations   = 2000000;
         
   #if TARGET_IPHONE_SIMULATOR
         iterations *= 4;
   #endif
         
         NSData*  pinKDFSalt    = [NSData dataWithRandom:keySize];
-        NSData*  pinDerivedKey = [pinData deriveKeyWithAlgorithm:deriveKeyAlgoPBKDF2CC
+        NSData*  pinDerivedKey = [pinData deriveKeyWithAlgorithm:deriveAlgo
                                                         withLength:keySize
                                                          usingSalt:pinKDFSalt
                                                      andIterations:iterations
@@ -107,7 +107,7 @@ masterKeyPUK.kdf             = @"PBKDF2CC";
           goto cleanup;
 
         NSData*  pukKDFSalt    = [NSData dataWithRandom:keySize];
-        NSData*  pukDerivedKey = [pukData deriveKeyWithAlgorithm:deriveKeyAlgoPBKDF2CC
+        NSData*  pukDerivedKey = [pukData deriveKeyWithAlgorithm:deriveAlgo
                                                       withLength:keySize
                                                        usingSalt:pukKDFSalt
                                                    andIterations:iterations
@@ -118,7 +118,7 @@ masterKeyPUK.kdf             = @"PBKDF2CC";
         NSData* masterCryptoKey0   = [NSData dataWithRandom:keySize];
         _NSLOG(@"masterCryptoKey0:%@",[masterCryptoKey0 hexStringValue]);
         
-        NSData* masterCryptoKey1   = [masterCryptoKey0 deriveKeyWithAlgorithm:deriveKeyAlgoPBKDF2CC
+        NSData* masterCryptoKey1   = [masterCryptoKey0 deriveKeyWithAlgorithm:deriveAlgo
                                                                                         withLength:keySize
                                                                                          usingSalt:[NSData dataWithRandom:keySize]
                                                                                      andIterations:1000000
@@ -129,8 +129,8 @@ masterKeyPUK.kdf             = @"PBKDF2CC";
         
         _NSLOG(@"masterCryptoKey1:%@",[masterCryptoKey1 hexStringValue]);
         
-        NSData* pinMasterCryptoIV     = [NSData dataWithRandom:vai.blockSize];
-        NSData* pinMasterEncryptedKey = [masterCryptoKey1 encryptWithAlgorithm:vai.cryptoAlgorithm
+        NSData* pinMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
+        NSData* pinMasterEncryptedKey = [masterCryptoKey1 encryptWithAlgorithm:encryptAlgo
                                                                       usingKey:pinDerivedKey
                                                                          andIV:pinMasterCryptoIV
                                                                          error:&error];
@@ -139,8 +139,8 @@ masterKeyPUK.kdf             = @"PBKDF2CC";
 
         _NSLOG(@"pinMasterEncryptedKey:%@",[pinMasterEncryptedKey hexStringValue]);
 
-        NSData* pukMasterCryptoIV     = [NSData dataWithRandom:vai.blockSize];
-        NSData* pukMasterEncryptedKey = [masterCryptoKey1 encryptWithAlgorithm:vai.cryptoAlgorithm
+        NSData* pukMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
+        NSData* pukMasterEncryptedKey = [masterCryptoKey1 encryptWithAlgorithm:encryptAlgo
                                                                       usingKey:pukDerivedKey
                                                                          andIV:pukMasterCryptoIV
                                                                          error:&error];
@@ -151,8 +151,8 @@ masterKeyPUK.kdf             = @"PBKDF2CC";
         
         cmkp                       = [CreateMasterKeysParameter new];
         
-        cmkp.cryptoAlgorithm       = VaultAlgorithmString[vat];
-        cmkp.kdfAlgorithm          = @"PBKDF2CC";
+        cmkp.cryptoAlgorithm       = encryptAlgo.name;
+        cmkp.kdfAlgorithm          = deriveAlgo.name;
         cmkp.kdfIterations         = iterations;
         
         cmkp.pinMasterEncryptedKey = pinMasterEncryptedKey;
