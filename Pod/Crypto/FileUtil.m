@@ -18,7 +18,7 @@
 #import "Macros.h"
 #import "FileUtil.h"
 #import "buffer.h"
-#import "CryptoError.h"
+#import "TresorError.h"
 #include "md5.h"
 #include "sha1.h"
 
@@ -94,23 +94,23 @@ if( condition ) \
   int      bytesRead       = 0;
   int      fd              = 0;
   BufferT* buffer          = buffer_alloc(1024, NULL);
-  CRYPTO_CHECK_ERROR( buffer==NULL,CryptoErrorHash,@"buffer not allocated",0 );
+  TRESOR_CHECKERROR( buffer==NULL,TresorErrorHash,@"buffer not allocated",0 );
 
   fd              = open([fileName UTF8String],O_RDONLY);
-  CRYPTO_CHECK_ERROR( fd<0,CryptoErrorHash,@"file open failed",errno );
+  TRESOR_CHECKERROR( fd<0,TresorErrorHash,@"file open failed",errno );
   
   switch( algorithm.type )
   { case tresorAlgorithmMD5:
     case tresorAlgorithmMD5CC:
       { digest = buffer_alloc(algorithm.blockSize, NULL);
-        CRYPTO_CHECK_ERROR( digest==NULL,CryptoErrorHash,@"buffer not allocated",0 );
+        TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
         
-        CRYPTO_CHECK_ERROR( internalErrCode!=EXIT_SUCCESS,CryptoErrorHash,@"CommonCryptoMD5 failed",internalErrCode );
+        TRESOR_CHECKERROR( internalErrCode!=EXIT_SUCCESS,TresorErrorHash,@"CommonCryptoMD5 failed",internalErrCode );
       }
       break;
     case tresorAlgorithmSHA1CC:
       { digest = buffer_alloc(algorithm.blockSize, NULL);
-        CRYPTO_CHECK_ERROR( digest==NULL,CryptoErrorHash,@"buffer not allocated",0 );
+        TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
         
         CC_SHA1_CTX ctx;
         CC_SHA1_Init(&ctx);
@@ -121,50 +121,50 @@ if( condition ) \
           
           CC_SHA1_Update(&ctx,in.data,in.length);
         } /* of while */
-        CRYPTO_CHECK_ERROR( bytesRead==-1,CryptoErrorHash,@"read failed",errno );
+        TRESOR_CHECKERROR( bytesRead==-1,TresorErrorHash,@"read failed",errno );
         
         CC_SHA1_Final(digest->data, &ctx);
       }
       break;
     case tresorAlgorithmSHA1:
       { digest = buffer_alloc(algorithm.blockSize, NULL);
-        CRYPTO_CHECK_ERROR( digest==NULL,CryptoErrorHash,@"buffer not allocated",0 );
+        TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
       
         SHA1ContextT ctx[1];
         
         internalErrCode = sha1_begin(ctx);
-        CRYPTO_CHECK_ERROR( internalErrCode!=SHA1_OK,CryptoErrorHash,@"sha1_begin failed",internalErrCode );
+        TRESOR_CHECKERROR( internalErrCode!=SHA1_OK,TresorErrorHash,@"sha1_begin failed",internalErrCode );
         
         while( (bytesRead=(int)read(fd,buffer->data,buffer->length))>0 )
         { BufferT in;
           buffer_init(&in,bytesRead, buffer->data);
           
           internalErrCode = sha1_hash(ctx,&in);
-          CRYPTO_CHECK_ERROR( internalErrCode!=SHA1_OK,CryptoErrorHash,@"sha1_hash failed",internalErrCode );
+          TRESOR_CHECKERROR( internalErrCode!=SHA1_OK,TresorErrorHash,@"sha1_hash failed",internalErrCode );
         } /* of while */
-        CRYPTO_CHECK_ERROR( bytesRead==-1,CryptoErrorHash,@"read failed",errno );
+        TRESOR_CHECKERROR( bytesRead==-1,TresorErrorHash,@"read failed",errno );
         
         internalErrCode = sha1_end(ctx,digest);
-        CRYPTO_CHECK_ERROR( internalErrCode!=SHA1_OK,CryptoErrorHash,@"sha1_end failed",internalErrCode );
+        TRESOR_CHECKERROR( internalErrCode!=SHA1_OK,TresorErrorHash,@"sha1_end failed",internalErrCode );
         
         internalErrCode = buffer_check(digest);
-        CRYPTO_CHECK_ERROR( internalErrCode!=BUFFER_OK,CryptoErrorHash,@"buffer_check failed",internalErrCode );
+        TRESOR_CHECKERROR( internalErrCode!=BUFFER_OK,TresorErrorHash,@"buffer_check failed",internalErrCode );
       }
       break;
     case tresorAlgorithmSHA256:
     case tresorAlgorithmSHA256CC:
       { digest = buffer_alloc(algorithm.blockSize, NULL);
-        CRYPTO_CHECK_ERROR( digest==NULL,CryptoErrorHash,@"buffer not allocated",0 );
+        TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
         
-        CRYPTO_CHECK_ERROR( internalErrCode!=EXIT_SUCCESS,CryptoErrorHash,@"CommonCryptoSHA256 failed",internalErrCode );
+        TRESOR_CHECKERROR( internalErrCode!=EXIT_SUCCESS,TresorErrorHash,@"CommonCryptoSHA256 failed",internalErrCode );
       }
       break;
     case tresorAlgorithmSHA512:
     case tresorAlgorithmSHA512CC:
       { digest = buffer_alloc(algorithm.blockSize, NULL);
-        CRYPTO_CHECK_ERROR( digest==NULL,CryptoErrorHash,@"buffer not allocated",0 );
+        TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
       
-        CRYPTO_CHECK_ERROR( internalErrCode!=EXIT_SUCCESS,CryptoErrorHash,@"CommonCryptoSHA512 failed",internalErrCode );
+        TRESOR_CHECKERROR( internalErrCode!=EXIT_SUCCESS,TresorErrorHash,@"CommonCryptoSHA512 failed",internalErrCode );
       }
       break;
     default:

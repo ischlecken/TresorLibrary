@@ -15,6 +15,25 @@
  */
 #import "TresorError.h"
 
-NSString *const TresorErrorDomain     = @"TresorErrorDomain";
 
-/*============================================================================END-OF-FILE============================================================================*/
+/**
+ *
+ */
+void createTresorError(NSError** outError,int errCode,NSString* description,int internalErrCode)
+{ if( outError!=nil )
+  { NSString*            localizedDescription = NSLocalizedStringFromTable(description,@"TresorError",@"");
+    NSMutableDictionary* userInfo             = [[NSMutableDictionary alloc] initWithCapacity:2];
+    
+    [userInfo setObject:localizedDescription forKey:NSLocalizedDescriptionKey];
+    
+    if( internalErrCode!=0 )
+    { NSError* underlyingError = [[NSError alloc] initWithDomain:kTresorErrorCoreDomain code:internalErrCode userInfo:nil];
+      
+      [userInfo setObject:underlyingError forKey:NSUnderlyingErrorKey];
+    } /* of if */
+    
+    *outError = [[NSError alloc] initWithDomain:kTresorErrorDomain code:errCode userInfo:userInfo];
+  } /* of if */
+} /* of createTresorError() */
+
+/*=================================================END-OF-FILE==================================================*/

@@ -24,7 +24,8 @@ Pod::Spec.new do |s|
   s.requires_arc     = true
 
   s.source_files     = 'Pod/*.{h,m}'
-
+  s.resource_bundle  = { 'TresorLibrary' => ['Pod/*.lproj'] }
+ 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'

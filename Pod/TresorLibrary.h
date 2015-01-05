@@ -29,7 +29,6 @@
 #import "aes.h"
 #import "twofish.h"
 #import "base64.h"
-#import "CryptoError.h"
 #import "commoncrypto.h"
 
 #import "Audit.h"

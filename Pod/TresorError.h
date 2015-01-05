@@ -14,19 +14,42 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #ifdef __OBJC__
-extern NSString* const TresorErrorDomain;
+
+
+#define kTresorErrorDomain     @"TresorErrorDomain"
+#define kTresorErrorCoreDomain @"TresorErrorCoreDomain"
 
 enum
-{ TresorErrorUnknown               = -1,
-  TresorErrorUnexpectedClassInPath = -2,
-  TresorErrorUnexpectedObjectClass = -3,
-  TresorErrorPathMismatch          = -4,
-  TresorErrorPathShouldNotBeNil    = -5,
-  TresorErrorPayloadShouldNotBeNil = -6,
-  TresorErrorPayloadIsNotDecrypted = -7,
-  TresorErrorNoPassword            = -8
+{
+  TresorErrorUnknown               = -1,
+  TresorErrorIllegalArgument       = -2,
+
+  TresorErrorPadding               = -3,
+  TresorErrorBufferAlloc           = -4,
+  TresorErrorHash                  = -5,
+  TresorErrorCipher                = -6,
+  
+  TresorErrorUnexpectedClassInPath = -20,
+  TresorErrorUnexpectedObjectClass = -21,
+  TresorErrorPathMismatch          = -22,
+  TresorErrorPathShouldNotBeNil    = -23,
+  TresorErrorPayloadShouldNotBeNil = -24,
+  TresorErrorPayloadIsNotDecrypted = -25,
+  TresorErrorNoPassword            = -26,
+  TresorErrorNoPaddingFound        = -27,
+  TresorErrorPaddingHashMismatch   = -28
+  
 };
 
-#define _TRESORERROR(errCode) [[NSError alloc] initWithDomain:TresorErrorDomain code:errCode userInfo:nil]
+#define _TRESORERROR(errCode) [[NSError alloc] initWithDomain:kTresorErrorDomain code:errCode userInfo:nil]
+
+#define TRESOR_CHECKERROR( condition,errCode,description,intErrCode ) \
+if( condition ) \
+{ createTresorError(outError, errCode, description,intErrCode); \
+\
+goto cleanUp; \
+}
+
+void createTresorError(NSError** outError,int errCode,NSString* description,int internalErrCode);
 #endif
-/*============================================================================END-OF-FILE============================================================================*/
+/*=================================================END-OF-FILE==================================================*/

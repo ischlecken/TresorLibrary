@@ -14,7 +14,7 @@
  * along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 #import "NSString+Crypto.h"
-#import "CryptoError.h"
+#import "TresorError.h"
 
 
 @implementation NSString(TresorCrypto)
