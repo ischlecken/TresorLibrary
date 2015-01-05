@@ -21,23 +21,26 @@
 
 enum
 {
-  TresorErrorUnknown               = -1,
-  TresorErrorIllegalArgument       = -2,
+  TresorErrorUnknown                    = -1,
+  TresorErrorIllegalArgument            = -2,
 
-  TresorErrorPadding               = -3,
-  TresorErrorBufferAlloc           = -4,
-  TresorErrorHash                  = -5,
-  TresorErrorCipher                = -6,
+  TresorErrorPadding                    = -3,
+  TresorErrorBufferAlloc                = -4,
+  TresorErrorHash                       = -5,
+  TresorErrorCipher                     = -6,
   
-  TresorErrorUnexpectedClassInPath = -20,
-  TresorErrorUnexpectedObjectClass = -21,
-  TresorErrorPathMismatch          = -22,
-  TresorErrorPathShouldNotBeNil    = -23,
-  TresorErrorPayloadShouldNotBeNil = -24,
-  TresorErrorPayloadIsNotDecrypted = -25,
-  TresorErrorNoPassword            = -26,
-  TresorErrorNoPaddingFound        = -27,
-  TresorErrorPaddingHashMismatch   = -28
+  TresorErrorUnexpectedClassInPath      = -20,
+  TresorErrorUnexpectedObjectClass      = -21,
+  TresorErrorPathMismatch               = -22,
+  TresorErrorPathShouldNotBeNil         = -23,
+  TresorErrorPayloadShouldNotBeNil      = -24,
+  TresorErrorPayloadIsNotDecrypted      = -25,
+  TresorErrorNoPassword                 = -26,
+  TresorErrorNoPaddingFound             = -27,
+  TresorErrorPaddingHashMismatch        = -28,
+  
+  TresorErrorCouldNotSerializePayload   = -29,
+  TresorErrorCouldNotDeserializePayload = -30,
   
 };
 

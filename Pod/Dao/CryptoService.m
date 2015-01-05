@@ -26,26 +26,6 @@
 #import "TresorAlgorithmInfo.h"
 #import "NSString+Crypto.h"
 
-typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
-{ CryptoServiceTagDummy=0,
-  CryptoServiceTagPayloadClassName=1,
-  CryptoServiceTagPayload=2,
-  CryptoServiceTagPayloadHash=3
-};
-
-//#define _USE_CRYPTO
-#define _USE_JSONMODEL
-
-@implementation JSONValueTransformer (CustomTransformer)
-
-- (NSDate *)NSDateFromNSString:(NSString*)string
-{ return [NSString rfc3339TimestampValue:string]; }
-
-- (NSString *)JSONObjectFromNSDate:(NSDate *)date
-{ return [NSString stringRFC3339TimestampForDate:date]; }
-
-@end
-
 
 @implementation CryptoService
 
@@ -66,66 +46,11 @@ typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
  *
  */
 +(id) decryptPayloadUsing:(NSData*)payload usingKey:(Key*)keyForPayload andDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error
-{ id result = nil;
-  
-  if( payload && keyForPayload )
-  {
-#ifdef _USE_CRYPTO
-    TresorAlgorithmT vat               = getVaultAlgorithm(keyForPayload.payloadalgorithm);
-    AlgorithmInfoT  vai               = VaultAlgorithmInfo[vat];
-    NSData*         decryptedPayload  = [payload decryptWithAlgorithm:vai.cryptoAlgorithm usingKey:decryptedKey andIV:[keyForPayload.payloadiv hexString2RawValue] error:error];
-#else
-    NSData*         decryptedPayload  = payload;
-#endif
-    
-    if( decryptedPayload )
-    {
-      decryptedPayload = [decryptedPayload mirror];
-      
-#ifdef _USE_JSONMODEL
-      const void* rawData          = [decryptedPayload bytes];
-      NSUInteger  rawDataSize      = [decryptedPayload length];
-      NSUInteger  i                = 0;
-      NSString*   payloadClassName = nil;
-      NSData*     payloadData      = nil;
-      
-      while( i<rawDataSize )
-      { UInt32      tag     = CFSwapInt32LittleToHost( *((UInt32*)(rawData+i))                  );
-        UInt32      tagSize = CFSwapInt32LittleToHost( *((UInt32*)(rawData+i+1*sizeof(UInt32))) );
-        const void* tagData =                                     (rawData+i+2*sizeof(UInt32));
-        
-        //NSLog(@"tag[%d,%d]",(unsigned int)tag,(unsigned int)tagSize);
-        
-        if( tag==CryptoServiceTagPayloadClassName )
-          payloadClassName = [[NSString alloc] initWithBytes:tagData length:tagSize encoding:NSUTF8StringEncoding];
-        else if( tag==CryptoServiceTagPayload )
-          payloadData = [NSData dataWithBytes:tagData length:tagSize];
-        
-        i += tagSize+sizeof(UInt32)+sizeof(UInt32);
-      } /* of while */
-      
-      if( payloadClassName && payloadData )
-      { //NSLog(@"payloadClassName:%@ payloadData=<%@>",payloadClassName,[[NSString alloc] initWithData:payloadData encoding:NSUTF8StringEncoding]);
-        
-        Class    payloadClass = NSClassFromString(payloadClassName);
-        NSError* error        = nil;
-        
-        if( [payloadClass isSubclassOfClass:[NSString class]] )
-          result = [[NSString alloc] initWithData:payloadData encoding:NSUTF8StringEncoding];
-        else if( [payloadClass isSubclassOfClass:[JSONModel class]] )
-          result = [[payloadClass alloc] initWithData:payloadData error:&error];
-        else
-          result = payloadData;
-        
-        if( error )
-          NSLog(@"error=%@",error);
-      } /* of if */
-#else
-      result = [NSKeyedUnarchiver unarchiveObjectWithData:decryptedPayload];
-#endif
-      
-    } /* of if */
-  } /* of if */
+{ id result = [NSData decryptPayload:payload
+                      usingAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:keyForPayload.cryptoalgorithm]
+                     andDecryptedKey:decryptedKey
+                         andCryptoIV:[keyForPayload.cryptoiv hexString2RawValue]
+                            andError:error];
   
   return result;
 }
@@ -133,76 +58,12 @@ typedef NS_ENUM(UInt32, CryptoServiceTagTypes)
 /**
  *
  */
-+(void) addTag:(UInt32)tagType andData:(NSData*)tagData toResult:(NSMutableData*)result
-{ UInt32  tag     = CFSwapInt32HostToLittle( tagType        );
-  UInt32  tagSize = CFSwapInt32HostToLittle( (UInt32)tagData.length );
-  
-  [result appendBytes:&tag     length:sizeof(tag)];
-  [result appendBytes:&tagSize length:sizeof(tagSize)];
-  [result appendData:tagData];
-}
-
-/**
- *
- */
-+(void) addTag:(UInt32)tagType andString:(NSString*)tagString toResult:(NSMutableData*)result
-{ NSData* tagData = [tagString dataUsingEncoding:NSUTF8StringEncoding];
-  
-  [CryptoService addTag:tagType andData:tagData toResult:result];
-}
-
-/**
- *
- */
 +(NSData*) encryptPayload:(id)payloadObject usingKey:(Key*)keyForPayload andDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error
-{ NSData* result = nil;
-  
-  if( payloadObject )
-  { NSData* rawPayload = nil;
-    
-#ifdef _USE_JSONMODEL
-    NSMutableData* rw                          = [[NSMutableData alloc] initWithCapacity:1024];
-    Class          payloadObjectClass          = [payloadObject class];
-    NSString*      payloadStringRepresentation = [payloadObject description];
-    
-    if( [payloadObject isKindOfClass:[JSONModel class]] )
-      payloadStringRepresentation = [payloadObject toJSONString];
-    else if( [payloadObject isKindOfClass:[NSString class]] )
-    { payloadObjectClass = [NSString class];
-      
-      payloadStringRepresentation = (NSString*)payloadObject;
-    } /* of else if */
-    
-    if( payloadStringRepresentation==nil )
-      [NSException raise:@"EncryptPayloadException" format:@"could not serialize payloadObject"];
-       
-    //NSLog(@"payload[%@]:%@",payloadObjectClass,payloadStringRepresentation);
-    
-    [CryptoService addTag:CryptoServiceTagPayloadClassName andString:NSStringFromClass(payloadObjectClass) toResult:rw];
-    [CryptoService addTag:CryptoServiceTagPayload          andString:payloadStringRepresentation           toResult:rw];
-    [CryptoService addTag:CryptoServiceTagDummy            andData:[NSData dataWithRandom:63]              toResult:rw];
-    
-    rawPayload = [rw mirror];
-#else
-    rawPayload = [NSKeyedArchiver archivedDataWithRootObject:payloadObject];
-#endif
-    
-    if( rawPayload )
-    {
-#ifdef _USE_CRYPTO
-      TresorAlgorithmT  vat        = vaultAES256;
-      AlgorithmInfoT   vai        = VaultAlgorithmInfo[vat];
-      NSString*        payloadIV  = [[NSData dataWithRandom:vai.keySize] hexStringValue];
-      TresorAlgorithmT  payloadVAT = getVaultAlgorithm(keyForPayload.payloadalgorithm);
-      AlgorithmInfoT   payloadVAI = VaultAlgorithmInfo[payloadVAT];
-
-      result = [rawPayload encryptWithAlgorithm:payloadVAI.cryptoAlgorithm usingKey:decryptedKey andIV:[payloadIV hexString2RawValue] error:error];
-#else
-      result = rawPayload;
-#endif
-    } /* of if */
-  } /* of if */
-  
+{ NSData* result = [NSData encryptPayload:payloadObject
+                           usingAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:keyForPayload.cryptoalgorithm]
+                          andDecryptedKey:decryptedKey
+                              andCryptoIV:[keyForPayload.cryptoiv hexString2RawValue]
+                                 andError:error];
   return result;
 }
 

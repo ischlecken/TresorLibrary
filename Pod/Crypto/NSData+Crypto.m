@@ -17,6 +17,7 @@
 #import "TresorError.h"
 #import "Macros.h"
 #import "JSONModel.h"
+#import "NSString+Date.h"
 
 #include "md5.h"
 #include "sha1.h"
@@ -33,6 +34,19 @@ typedef NS_ENUM(UInt8, CryptoTagTypes)
   CryptoTagPayloadClassName  =3,
   CryptoTagPayload           =4
 };
+
+
+#define _USE_JSONMODEL
+
+@implementation JSONValueTransformer (CustomTransformer)
+
+- (NSDate *)NSDateFromNSString:(NSString*)string
+{ return [NSString rfc3339TimestampValue:string]; }
+
+- (NSString *)JSONObjectFromNSDate:(NSDate *)date
+{ return [NSString stringRFC3339TimestampForDate:date]; }
+
+@end
 
 
 @implementation GeneratedPIN
@@ -489,8 +503,7 @@ cleanUp:
         NSLog(@"tag[%d,%d]",(unsigned int)tag,(unsigned int)tagSize);
         
         switch( tag )
-        {
-          case CryptoTagPayloadClassName:
+        { case CryptoTagPayloadClassName:
             payloadClassName = [[NSString alloc] initWithBytes:tagData length:tagSize encoding:NSUTF8StringEncoding];
             break;
           case CryptoTagPayload:
@@ -521,22 +534,24 @@ cleanUp:
         goto cleanup;
       } /* of if */
       
-      
       if( payloadClassName && payloadData )
       { //NSLog(@"payloadClassName:%@ payloadData=<%@>",payloadClassName,[[NSString alloc] initWithData:payloadData encoding:NSUTF8StringEncoding]);
         
-        Class    payloadClass = NSClassFromString(payloadClassName);
-        NSError* error        = nil;
+        Class payloadClass = NSClassFromString(payloadClassName);
         
         if( [payloadClass isSubclassOfClass:[NSString class]] )
           result = [[NSString alloc] initWithData:payloadData encoding:NSUTF8StringEncoding];
-        else if( [payloadClass isSubclassOfClass:[JSONModel class]] )
-          result = [[payloadClass alloc] initWithData:payloadData error:&error];
-        else
+        else if( [payloadClass isSubclassOfClass:[NSData class]] )
           result = payloadData;
+        else if( [payloadClass isSubclassOfClass:[JSONModel class]] )
+          result = [[payloadClass alloc] initWithData:payloadData error:error];
         
-        if( error )
-          NSLog(@"error=%@",error);
+        if( result==nil )
+        { *error = _TRESORERROR(TresorErrorCouldNotDeserializePayload);
+          
+          goto cleanup;
+        } /* of if */
+        
       } /* of if */
     } /* of if */
   } /* of if */
@@ -556,22 +571,29 @@ cleanup:
   if( payloadObject )
   { NSData* rawPayload = nil;
     
-    NSMutableData* rw                          = [[NSMutableData alloc] initWithCapacity:1024];
-    Class          payloadObjectClass          = [payloadObject class];
-    NSString*      payloadStringRepresentation = nil;
+    NSMutableData* rw                 = [[NSMutableData alloc] initWithCapacity:1024];
+    Class          payloadObjectClass = [payloadObject class];
+    NSData*        payloadObjectData  = nil;
     
-    if( [payloadObject isKindOfClass:[JSONModel class]] )
-      payloadStringRepresentation = [payloadObject toJSONString];
-    else if( [payloadObject isKindOfClass:[NSString class]] )
+    if( [payloadObject isKindOfClass:[NSString class]] )
     { payloadObjectClass = [NSString class];
       
-      payloadStringRepresentation = (NSString*)payloadObject;
+      payloadObjectData  = [(NSString*)payloadObject dataUsingEncoding:NSUTF8StringEncoding];
     } /* of else if */
+    else if( [payloadObject isKindOfClass:[NSData class]] )
+    { payloadObjectClass = [NSData class];
+      payloadObjectData  = payloadObject;
+    } /* of else if */
+    else if( [payloadObject isKindOfClass:[JSONModel class]] )
+      payloadObjectData = [[payloadObject toJSONString] dataUsingEncoding:NSUTF8StringEncoding];
     
-    if( payloadStringRepresentation==nil )
-      [NSException raise:@"EncryptPayloadException" format:@"could not serialize payloadObject"];
+    if( payloadObjectData==nil )
+    { *error = _TRESORERROR(TresorErrorCouldNotSerializePayload);
+      
+      goto cleanup;
+    } /* of if */
     
-    NSLog(@"payload[%@]:%@",payloadObjectClass,payloadStringRepresentation);
+    NSLog(@"payload[%@]:%@",payloadObjectClass,[payloadObjectData hexStringValue]);
     
     NSData* randomPadding     = [NSData dataWithRandom:255];
     NSLog(@"randomPadding[%@]",[randomPadding hexStringValue]);
@@ -581,7 +603,7 @@ cleanup:
     
     if( randomPaddingHash )
     { [NSData addTag:CryptoTagPayloadClassName  andString:NSStringFromClass(payloadObjectClass) toResult:rw];
-      [NSData addTag:CryptoTagPayload           andString:payloadStringRepresentation           toResult:rw];
+      [NSData addTag:CryptoTagPayload           andData:payloadObjectData                       toResult:rw];
       [NSData addTag:CryptoTagRandomPaddingHash andData:randomPaddingHash                       toResult:rw];
       [NSData addTag:CryptoTagRandomPadding     andData:randomPadding                           toResult:rw];
       
@@ -595,6 +617,8 @@ cleanup:
       } /* of if */
     } /* of if */
   } /* of if */
+  
+cleanup:
   
   return result;
 }

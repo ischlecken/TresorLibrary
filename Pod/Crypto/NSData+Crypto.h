@@ -44,5 +44,17 @@
 
 +(PMKPromise*)  generatePINWithLength:(NSUInteger)pinLength;
 
++(id)           decryptPayload:(NSData*)payload
+                usingAlgorithm:(TresorAlgorithmInfo*)algorithm
+               andDecryptedKey:(NSData*)decryptedKey
+                   andCryptoIV:(NSData*)cryptoIV
+                      andError:(NSError**)error;
+
++(NSData*)      encryptPayload:(id)payloadObject
+                usingAlgorithm:(TresorAlgorithmInfo*)algorithm
+               andDecryptedKey:(NSData*)decryptedKey
+                   andCryptoIV:(NSData*)cryptoIV
+                      andError:(NSError**)error;
+
 @end
 /*==================================END-OF-FILE==========================================*/

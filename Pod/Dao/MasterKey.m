@@ -130,20 +130,24 @@ masterKeyPUK.kdf             = @"PBKDF2CC";
         _NSLOG(@"masterCryptoKey1:%@",[masterCryptoKey1 hexStringValue]);
         
         NSData* pinMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
-        NSData* pinMasterEncryptedKey = [masterCryptoKey1 encryptWithAlgorithm:encryptAlgo
-                                                                      usingKey:pinDerivedKey
-                                                                         andIV:pinMasterCryptoIV
-                                                                         error:&error];
+        NSData* pinMasterEncryptedKey = [NSData encryptPayload:masterCryptoKey1
+                                                usingAlgorithm:encryptAlgo
+                                               andDecryptedKey:pinDerivedKey
+                                                   andCryptoIV:pinMasterCryptoIV
+                                                      andError:&error];
+        
         if( pinMasterEncryptedKey==nil )
           goto cleanup;
 
         _NSLOG(@"pinMasterEncryptedKey:%@",[pinMasterEncryptedKey hexStringValue]);
 
         NSData* pukMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
-        NSData* pukMasterEncryptedKey = [masterCryptoKey1 encryptWithAlgorithm:encryptAlgo
-                                                                      usingKey:pukDerivedKey
-                                                                         andIV:pukMasterCryptoIV
-                                                                         error:&error];
+        NSData* pukMasterEncryptedKey = [NSData encryptPayload:masterCryptoKey1
+                                                usingAlgorithm:encryptAlgo
+                                               andDecryptedKey:pukDerivedKey
+                                                   andCryptoIV:pukMasterCryptoIV
+                                                      andError:&error];
+        
         if( pukMasterEncryptedKey==nil )
           goto cleanup;
         
