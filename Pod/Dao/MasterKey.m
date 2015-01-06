@@ -1,10 +1,20 @@
-//
-//  MasterKey.m
-//  Pods
-//
-//  Created by Feldmaus on 11.12.14.
-//
-//
+/*
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see http://www.gnu.org/licenses/.
+ *
+ * Copyright (c) 2015 ischlecken.
+ */
 #import "MasterKey.h"
 #import "Vault.h"
 #import "TresorAlgorithmInfo.h"
@@ -13,28 +23,6 @@
 #import "Macros.h"
 
 #pragma mark - CreateMasterKeysParameter
-
-#if 0
-masterKeyPIN.createts        = [NSDate date];
-masterKeyPIN.encryptedkey    = pinMasterEncryptedKey;
-masterKeyPIN.cryptoiv        = [pinMasterCryptoIV hexStringValue];
-masterKeyPIN.cryptoalgorithm = VaultAlgorithmString[vat];
-masterKeyPIN.authentication  = @"pin";
-masterKeyPIN.kdfiterations   = [NSNumber numberWithUnsignedInteger:iterations];
-masterKeyPIN.kdfsalt         = [pinKDFSalt hexStringValue];
-masterKeyPIN.kdf             = @"PBKDF2CC";
-
-masterKeyPUK = [NSEntityDescription insertNewObjectForEntityForName:@"MasterKey" inManagedObjectContext:_MOC];
-masterKeyPUK.createts        = masterKeyPIN.createts;
-masterKeyPUK.encryptedkey    = pukMasterEncryptedKey;
-masterKeyPUK.cryptoiv        = [pukMasterCryptoIV hexStringValue];
-masterKeyPUK.cryptoalgorithm = VaultAlgorithmString[vat];
-masterKeyPUK.authentication  = @"pin";
-masterKeyPUK.kdfiterations   = [NSNumber numberWithUnsignedInteger:iterations];
-masterKeyPUK.kdfsalt         = [pukKDFSalt hexStringValue];
-masterKeyPUK.kdf             = @"PBKDF2CC";
-}
-#endif
 
 @interface CreateMasterKeysParameter : NSObject
 @property NSData*    pinMasterEncryptedKey;
@@ -212,9 +200,41 @@ cleanup:
   { dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^
     { _NSLOG(@"decryptedMasterKeyUsingPIN.start");
       
-      NSData* decryptedKey = [NSData new];
+      NSError* error              = nil;
+      NSData*  decryptedMasterKey = nil;
       
-      fulfill(decryptedKey);
+      { TresorAlgorithmInfo*  encryptAlgo   = [TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm];
+        TresorAlgorithmInfo*  deriveAlgo    = [TresorAlgorithmInfo tresorAlgorithmInfoForName:self.kdf];
+        NSData*               pinData       = [pin hexString2RawValue];
+        NSUInteger            keySize       = encryptAlgo.keySize;
+        NSUInteger            iterations    = [self.kdfiterations unsignedIntegerValue];
+        NSData*               pinKDFSalt    = [self.kdfsalt hexString2RawValue];
+        NSData*               pinDerivedKey = [pinData deriveKeyWithAlgorithm:deriveAlgo
+                                                                   withLength:keySize
+                                                                    usingSalt:pinKDFSalt
+                                                                andIterations:iterations
+                                                                        error:&error];
+        if( pinDerivedKey==nil )
+          goto cleanup;
+        
+        decryptedMasterKey = [NSData decryptPayload:self.encryptedkey
+                                     usingAlgorithm:encryptAlgo
+                                    andDecryptedKey:pinDerivedKey
+                                        andCryptoIV:[self.cryptoiv hexString2RawValue]
+                                           andError:&error];
+        
+        
+        
+      }
+      
+    cleanup:
+      if( decryptedMasterKey )
+      { _NSLOG(@"decryptedMasterKey:%@",[decryptedMasterKey hexStringValue]);
+        
+        fulfill(decryptedMasterKey);
+      } /* of if */
+      else
+        reject(error);
       
       _NSLOG(@"decryptedMasterKeyUsingPIN.stop");
     });
