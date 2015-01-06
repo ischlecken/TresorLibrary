@@ -38,9 +38,11 @@ enum
   TresorErrorNoPassword                 = -26,
   TresorErrorNoPaddingFound             = -27,
   TresorErrorPaddingHashMismatch        = -28,
+  TresorErrorNoPayloadClassNameFound    = -29,
+  TresorErrorNoPayloadDataFound         = -30,
   
-  TresorErrorCouldNotSerializePayload   = -29,
-  TresorErrorCouldNotDeserializePayload = -30,
+  TresorErrorCouldNotSerializePayload   = -31,
+  TresorErrorCouldNotDeserializePayload = -32,
   
 };
 

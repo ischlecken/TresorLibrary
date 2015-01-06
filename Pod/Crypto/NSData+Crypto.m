@@ -27,12 +27,23 @@
 #include "base64.h"
 #include "commoncrypto.h"
 
+#define kTagSize0     0x00
+#define kTagSize8     0x01
+#define kTagSize16    0x02
+#define kTagSize32    0x03
+#define kTagSizeMask  0x03
+
 typedef NS_ENUM(UInt8, CryptoTagTypes)
-{ CryptoTagDummy             =0,
-  CryptoTagRandomPadding     =1,
-  CryptoTagRandomPaddingHash =2,
-  CryptoTagPayloadClassName  =3,
-  CryptoTagPayload           =4
+{ CryptoTagDummy             = (0x00    <<2) + kTagSize0 , // 0x00
+  CryptoTagRandomPadding     = (0x01    <<2) + kTagSize8 , // 0x05
+  CryptoTagRandomPaddingHash = (0x02    <<2) + kTagSize8 , // 0x09
+  CryptoTagPayload32         = (0x03    <<2) + kTagSize32, // 0x0F
+  CryptoTagPayload16         = (0x04    <<2) + kTagSize16, // 0x12
+  CryptoTagPayload8          = (0x05    <<2) + kTagSize8 , // 0x15
+
+  CryptoTagPayloadClassName  = ((0x30+0)<<2) + kTagSize8 , // 0xC3
+  CryptoTagPayloadNSString   = ((0x30+1)<<2) + kTagSize0 , // 0xC4
+  CryptoTagPayloadNSData     = ((0x30+2)<<2) + kTagSize0   // 0xC8
 };
 
 
@@ -489,24 +500,57 @@ cleanUp:
       
       const void* rawData           = [decryptedPayload bytes];
       NSUInteger  rawDataSize       = [decryptedPayload length];
-      NSUInteger  i                 = 0;
+      const void* rawDataEnd        = rawData+rawDataSize;
       NSString*   payloadClassName  = nil;
       NSData*     payloadData       = nil;
       NSData*     randomPadding     = nil;
       NSData*     randomPaddingHash = nil;
       
-      while( i<rawDataSize )
-      { UInt32      tag     = CFSwapInt32LittleToHost( *((UInt32*)(rawData+i))                  );
-        UInt32      tagSize = CFSwapInt32LittleToHost( *((UInt32*)(rawData+i+1*sizeof(UInt32))) );
-        const void* tagData =                                     (rawData+i+2*sizeof(UInt32));
+      while( rawData<rawDataEnd )
+      { UInt8       tag           = *((UInt8*)rawData);
+        UInt8       tagSizeLength = tag & kTagSizeMask;
+        UInt32      tagSize       = 0;
+        const void* tagData       = nil;
         
+        rawData++;
+        
+        switch ( tagSizeLength )
+        { case kTagSize0:
+            break;
+          case kTagSize8:
+            tagSize  = *((UInt8*)rawData);
+            rawData += sizeof(UInt8);
+            break;
+          case kTagSize16:
+            tagSize  = CFSwapInt16LittleToHost( *((UInt16*)rawData) );
+            rawData += sizeof(UInt16);
+            break;
+          case kTagSize32:
+            tagSize  = CFSwapInt32LittleToHost( *((UInt32*)rawData) );
+            rawData += sizeof(UInt32);
+            break;
+          default:
+            break;
+        } /* of switch */
+        
+        tagData  = rawData;
+        rawData += tagSize;
+
         NSLog(@"tag[%d,%d]",(unsigned int)tag,(unsigned int)tagSize);
         
         switch( tag )
         { case CryptoTagPayloadClassName:
             payloadClassName = [[NSString alloc] initWithBytes:tagData length:tagSize encoding:NSUTF8StringEncoding];
             break;
-          case CryptoTagPayload:
+          case CryptoTagPayloadNSData:
+            payloadClassName = @"NSData";
+            break;
+          case CryptoTagPayloadNSString:
+            payloadClassName = @"NSString";
+            break;
+          case CryptoTagPayload32:
+          case CryptoTagPayload16:
+          case CryptoTagPayload8:
             payloadData = [NSData dataWithBytes:tagData length:tagSize];
             break;
           case CryptoTagRandomPadding:
@@ -516,8 +560,6 @@ cleanUp:
             randomPaddingHash = [NSData dataWithBytes:tagData length:tagSize];
             break;
         } /* of switch */
-        
-        i += tagSize+sizeof(UInt32)+sizeof(UInt32);
       } /* of while */
       
       if( randomPadding==nil || randomPaddingHash==nil )
@@ -525,7 +567,19 @@ cleanUp:
         
         goto cleanup;
       } /* of if */
-      
+
+      if( payloadClassName==nil )
+      { *error = _TRESORERROR(TresorErrorNoPayloadClassNameFound);
+        
+        goto cleanup;
+      } /* of if */
+
+      if( payloadData==nil )
+      { *error = _TRESORERROR(TresorErrorNoPayloadDataFound);
+        
+        goto cleanup;
+      } /* of if */
+
       NSData* calcRandomPaddingHash = [randomPadding hashWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmSHA256CC] error:error];
       
       if( calcRandomPaddingHash==nil || ![calcRandomPaddingHash isEqualToData:randomPaddingHash] )
@@ -577,7 +631,6 @@ cleanup:
     
     if( [payloadObject isKindOfClass:[NSString class]] )
     { payloadObjectClass = [NSString class];
-      
       payloadObjectData  = [(NSString*)payloadObject dataUsingEncoding:NSUTF8StringEncoding];
     } /* of else if */
     else if( [payloadObject isKindOfClass:[NSData class]] )
@@ -595,17 +648,17 @@ cleanup:
     
     NSLog(@"payload[%@]:%@",payloadObjectClass,[payloadObjectData hexStringValue]);
     
-    NSData* randomPadding     = [NSData dataWithRandom:255];
+    NSData* randomPadding     = [NSData dataWithRandom:127];
     NSLog(@"randomPadding[%@]",[randomPadding hexStringValue]);
     
     NSData* randomPaddingHash = [randomPadding hashWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmSHA256CC] error:error];
     NSLog(@"randomPaddingHash[%@]",[randomPaddingHash hexStringValue]);
     
     if( randomPaddingHash )
-    { [NSData addTag:CryptoTagPayloadClassName  andString:NSStringFromClass(payloadObjectClass) toResult:rw];
-      [NSData addTag:CryptoTagPayload           andData:payloadObjectData                       toResult:rw];
-      [NSData addTag:CryptoTagRandomPaddingHash andData:randomPaddingHash                       toResult:rw];
-      [NSData addTag:CryptoTagRandomPadding     andData:randomPadding                           toResult:rw];
+    { [NSData addTag:CryptoTagPayloadClassName  andClass:payloadObjectClass toResult:rw];
+      [NSData addTag:CryptoTagPayload32         andData:payloadObjectData   toResult:rw];
+      [NSData addTag:CryptoTagRandomPaddingHash andData:randomPaddingHash   toResult:rw];
+      [NSData addTag:CryptoTagRandomPadding     andData:randomPadding       toResult:rw];
       
       rawPayload = [rw mirror];
       NSLog(@"rawPayload[%@]",[rawPayload hexStringValue]);
@@ -626,22 +679,69 @@ cleanup:
 /**
  *
  */
-+(void) addTag:(UInt32)tagType andData:(NSData*)tagData toResult:(NSMutableData*)result
-{ UInt32  tag     = CFSwapInt32HostToLittle( tagType        );
-  UInt32  tagSize = CFSwapInt32HostToLittle( (UInt32)tagData.length );
++(void) addTag:(UInt8)tag andData:(NSData*)tagData toResult:(NSMutableData*)result
+{ UInt32  tagSize32 = 0;
+  UInt16  tagSize16 = 0;
+  UInt8   tagSize8  = 0;
   
-  [result appendBytes:&tag     length:sizeof(tag)];
-  [result appendBytes:&tagSize length:sizeof(tagSize)];
-  [result appendData:tagData];
+  if( tag==CryptoTagPayload32 && tagData )
+  {
+    if( tagData.length<256 )
+      tag = CryptoTagPayload8;
+    else if( tagData.length<65536 )
+      tag = CryptoTagPayload16;
+  } /* of if */
+
+  [result appendBytes:&tag length:sizeof(tag)];
+  
+  if( tagData )
+  { UInt8 tagSize = tag&kTagSizeMask;
+    
+    switch( tagSize )
+    {
+      case kTagSize0:
+        break;
+      case kTagSize8:
+        tagSize8 = (UInt8)tagData.length;
+        [result appendBytes:&tagSize8 length:sizeof(tagSize8)];
+        break;
+      case kTagSize16:
+        tagSize16 = CFSwapInt16HostToLittle( (UInt16)tagData.length );
+        [result appendBytes:&tagSize16 length:sizeof(tagSize16)];
+        break;
+      case kTagSize32:
+        tagSize32 = CFSwapInt32HostToLittle( (UInt32)tagData.length );
+        [result appendBytes:&tagSize32 length:sizeof(tagSize32)];
+        break;
+    } /* of switch */
+  
+    [result appendData:tagData];
+  } /* of if */
 }
 
 /**
  *
  */
-+(void) addTag:(UInt32)tagType andString:(NSString*)tagString toResult:(NSMutableData*)result
++(void) addTag:(UInt32)tag andString:(NSString*)tagString toResult:(NSMutableData*)result
 { NSData* tagData = [tagString dataUsingEncoding:NSUTF8StringEncoding];
   
-  [NSData addTag:tagType andData:tagData toResult:result];
+  [NSData addTag:tag andData:tagData toResult:result];
+}
+
+/**
+ *
+ */
++(void) addTag:(UInt32)tag andClass:(Class)classObject toResult:(NSMutableData*)result
+{ NSData* tagData = nil;
+  
+  if( [classObject isSubclassOfClass:[NSString class]] )
+    tag = CryptoTagPayloadNSString;
+  else if( [classObject isSubclassOfClass:[NSData class]] )
+    tag = CryptoTagPayloadNSData;
+  else
+    tagData = [NSStringFromClass(classObject) dataUsingEncoding:NSUTF8StringEncoding];
+  
+  [NSData addTag:tag andData:tagData toResult:result];
 }
 
 @end
