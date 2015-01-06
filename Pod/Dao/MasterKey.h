@@ -12,34 +12,29 @@
 @class Vault;
 
 @interface MasterKey : NSManagedObject
-
 @property (nonatomic, retain) NSDate*   createts;
 @property (nonatomic, retain) NSString* cryptoalgorithm;
 @property (nonatomic, retain) NSData*   encryptedkey;
 @property (nonatomic, retain) NSString* cryptoiv;
-
 @property (nonatomic, retain) NSDate*   lockts;
 @property (nonatomic, retain) NSNumber* lockcount;
 @property (nonatomic, retain) NSNumber* failedauthentications;
 @property (nonatomic, retain) NSString* authentication;
-
 @property (nonatomic, retain) NSString* kdfsalt;
 @property (nonatomic, retain) NSString* kdf;
 @property (nonatomic, retain) NSNumber* kdfiterations;
-
 @property (nonatomic, retain) NSSet*    keys;
-
 @property (nonatomic, retain) Vault*    vault;
+
++(PMKPromise*) masterKeyWithPin:(NSString*)pin andPUK:(NSString*)puk;
+-(PMKPromise*) decryptedMasterKeyUsingPIN:(NSString*)pin;
 @end
 
 @interface MasterKey (CoreDataGeneratedAccessors)
-
 -(void)addKeysObject:(Key*)value;
 -(void)removeKeysObject:(Key*)value;
 -(void)addKeys:(NSSet*)values;
 -(void)removeKeys:(NSSet*)values;
-
-+(PMKPromise*) masterKeyWithPin:(NSString*)pin andPUK:(NSString*)puk;
 @end
 
 /**

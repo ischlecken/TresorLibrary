@@ -193,12 +193,33 @@ cleanup:
     masterKeyPUK.encryptedkey    = cmkp.pukMasterEncryptedKey;
     masterKeyPUK.cryptoiv        = [cmkp.pukMasterCryptoIV hexStringValue];
     masterKeyPUK.cryptoalgorithm = cmkp.cryptoAlgorithm;
-    masterKeyPUK.authentication  = @"pin";
+    masterKeyPUK.authentication  = @"puk";
     masterKeyPUK.kdfiterations   = [NSNumber numberWithUnsignedInteger:cmkp.kdfIterations];
     masterKeyPUK.kdfsalt         = [cmkp.pukKDFSalt hexStringValue];
     masterKeyPUK.kdf             = cmkp.kdfAlgorithm;
+    
+    return PMKManifold(masterKeyPIN,masterKeyPUK);
   });
 
+  return result;
+}
+
+/**
+ *
+ */
+-(PMKPromise*) decryptedMasterKeyUsingPIN:(NSString*)pin
+{ PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
+  { dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^
+    { _NSLOG(@"decryptedMasterKeyUsingPIN.start");
+      
+      NSData* decryptedKey = [NSData new];
+      
+      fulfill(decryptedKey);
+      
+      _NSLOG(@"decryptedMasterKeyUsingPIN.stop");
+    });
+  }];
+  
   return result;
 }
 

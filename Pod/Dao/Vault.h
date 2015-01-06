@@ -27,18 +27,13 @@
 
 
 @interface Vault : NSManagedObject <Visit>
-
 @property (nonatomic, retain) NSDate*   createts;
 @property (nonatomic, retain) NSDate*   modifyts;
-
 @property (nonatomic, retain) NSString* vaulttype;
 @property (nonatomic, retain) NSString* vaultname;
 @property (nonatomic, retain) NSData*   vaulticon;
-
 @property (nonatomic, retain) NSString* nextcommitoid;
-
 @property (nonatomic, retain) Commit*   commit;
-
 @property (nonatomic, retain) NSSet*    masterkeys;
 
 #pragma mark dao extension
@@ -56,11 +51,10 @@
 
 @end
 
+
 @interface Vault (CoreDataGeneratedAccessors)
-
--(void)addMasterKeysObject:(MasterKey*)value;
--(void)removeMasterKeysObject:(MasterKey*)value;
--(void)addMasterKeys:(NSSet*)values;
--(void)removeMasterKeys:(NSSet*)values;
-
+-(void)addMasterkeysObject:(MasterKey *)value;
+-(void)removeMasterkeysObject:(MasterKey *)value;
+-(void)addMasterkeys:(NSSet *)values;
+-(void)removeMasterkeys:(NSSet *)values;
 @end

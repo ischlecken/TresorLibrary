@@ -19,7 +19,6 @@
 @property (nonatomic, retain) NSString* cryptoiv;
 @property (nonatomic, retain) NSData*   encryptedkey;
 @property (nonatomic, retain) Payload*  payload;
-
 @property (nonatomic, retain) NSSet*    masterkeys;
 
 #pragma mark dao extension
@@ -31,9 +30,9 @@
 
 @interface Key (CoreDataGeneratedAccessors)
 
--(void)addMasterKeysObject:(MasterKey*)value;
--(void)removeMasterKeysObject:(MasterKey*)value;
--(void)addMasterKeys:(NSSet*)values;
--(void)removeMasterKeys:(NSSet*)values;
+-(void)addMasterkeysObject:(MasterKey*)value;
+-(void)removeMasterkeysObject:(MasterKey*)value;
+-(void)addMasterkeys:(NSSet*)values;
+-(void)removeMasterkeys:(NSSet*)values;
 
 @end

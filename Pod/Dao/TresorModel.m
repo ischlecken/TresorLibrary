@@ -162,7 +162,9 @@
   
   [psc performBlockAndWait:^
   { NSDictionary*      options  = @{ NSMigratePersistentStoresAutomaticallyOption : [NSNumber numberWithBool:YES],
-                                     NSInferMappingModelAutomaticallyOption       : [NSNumber numberWithBool:YES]
+                                     NSInferMappingModelAutomaticallyOption       : [NSNumber numberWithBool:YES],
+                                     NSPersistentStoreFileProtectionKey           : NSFileProtectionComplete,
+                                     NSSQLitePragmasOption                        : @{@"journal_mode" : @"DELETE"}
                                    };
     NSError*           error    = nil;
   
@@ -187,7 +189,9 @@
     NSString*      coreDataCloudContent = [[transactionLogsURL path] stringByAppendingPathComponent:@"CoreDataLogs"];
     NSDictionary*  options              = @{ NSPersistentStoreUbiquitousContentNameKey    : @"tresor",
                                              NSPersistentStoreUbiquitousContentURLKey     : [NSURL fileURLWithPath:coreDataCloudContent],
-                                             NSMigratePersistentStoresAutomaticallyOption : [NSNumber numberWithBool:YES]
+                                             NSMigratePersistentStoresAutomaticallyOption : [NSNumber numberWithBool:YES],
+                                             NSPersistentStoreFileProtectionKey           : NSFileProtectionComplete,
+                                             NSSQLitePragmasOption                        : @{@"journal_mode" : @"DELETE"}
                                            };
     
     result = [psc addPersistentStoreWithType:NSSQLiteStoreType configuration:configuration URL:storeURL options:options error:&error]!=nil;
@@ -204,17 +208,14 @@
 -(NSURL*) ubiquityContainerURL:(void (^)(BOOL available,NSURL* url))completion
 { if( _ubiquityContainerURL==nil )
   dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^
-                 { _ubiquityContainerURL = [[NSFileManager defaultManager] URLForUbiquityContainerIdentifier:nil];
-                   
-                   _NSLOG(@"ubiquityContainerURL:%@",_ubiquityContainerURL);
-                   
-                   BOOL iCloudAvailable = _ubiquityContainerURL!=nil ;
-                   
-                   dispatch_async(dispatch_get_main_queue(), ^
-                                  { completion(iCloudAvailable,_ubiquityContainerURL);
-                                  });
-                   
-                 });
+  { _ubiquityContainerURL = [[NSFileManager defaultManager] URLForUbiquityContainerIdentifier:nil];
+   
+    _NSLOG(@"ubiquityContainerURL:%@",_ubiquityContainerURL);
+   
+    BOOL iCloudAvailable = _ubiquityContainerURL!=nil ;
+   
+    dispatch_async(dispatch_get_main_queue(), ^{ completion(iCloudAvailable,_ubiquityContainerURL); });
+ });
   
   return _ubiquityContainerURL;
 }
