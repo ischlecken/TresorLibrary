@@ -21,15 +21,17 @@
 #import "NSString+Crypto.h"
 #import "TresorModel.h"
 #import "Macros.h"
+#import "GCDQueue.h"
+#import "SSKeychain.h"
 
 #pragma mark - CreateMasterKeysParameter
 
 @interface CreateMasterKeysParameter : NSObject
-@property NSData*    pinMasterEncryptedKey;
+@property NSString*  keyChainID4EncryptedPinMasterKey;
 @property NSData*    pinMasterCryptoIV;
 @property NSData*    pinKDFSalt;
 
-@property NSData*    pukMasterEncryptedKey;
+@property NSString*  keyChainID4EncryptedPUKMasterKey;
 @property NSData*    pukMasterCryptoIV;
 @property NSData*    pukKDFSalt;
 
@@ -48,7 +50,7 @@
 
 @dynamic createts;
 @dynamic cryptoalgorithm;
-@dynamic encryptedkey;
+@dynamic keychainid4encryptedkey;
 @dynamic cryptoiv;
 
 @dynamic lockts;
@@ -68,7 +70,7 @@
 +(PMKPromise*) masterKeyWithPin:(NSString*)pin andPUK:(NSString*)puk
 { PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
   {
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^
+    dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
     { _NSLOG(@"masterKeyWithPin.start");
 
       NSError*                   error = nil;
@@ -81,9 +83,9 @@
         NSUInteger            keySize      = encryptAlgo.keySize;
         NSUInteger            iterations   = 2000000;
         
-  #if TARGET_IPHONE_SIMULATOR
+#if TARGET_IPHONE_SIMULATOR
         iterations *= 4;
-  #endif
+#endif
         
         NSData*  pinKDFSalt    = [NSData dataWithRandom:keySize];
         NSData*  pinDerivedKey = [pinData deriveKeyWithAlgorithm:deriveAlgo
@@ -106,6 +108,9 @@
         NSData* masterCryptoKey0   = [NSData dataWithRandom:keySize];
         _NSLOG(@"masterCryptoKey0:%@",[masterCryptoKey0 hexStringValue]);
         
+        /**
+         * this is the master key that is used for the encryption of all other keys
+         */
         NSData* masterCryptoKey1   = [masterCryptoKey0 deriveKeyWithAlgorithm:deriveAlgo
                                                                                         withLength:keySize
                                                                                          usingSalt:[NSData dataWithRandom:keySize]
@@ -140,20 +145,38 @@
           goto cleanup;
         
         _NSLOG(@"pukMasterEncryptedKey:%@",[pukMasterEncryptedKey hexStringValue]);
-        
-        cmkp                       = [CreateMasterKeysParameter new];
-        
-        cmkp.cryptoAlgorithm       = encryptAlgo.name;
-        cmkp.kdfAlgorithm          = deriveAlgo.name;
-        cmkp.kdfIterations         = iterations;
-        
-        cmkp.pinMasterEncryptedKey = pinMasterEncryptedKey;
-        cmkp.pinMasterCryptoIV     = pinMasterCryptoIV;
-        cmkp.pinKDFSalt            = pinKDFSalt;
 
-        cmkp.pukMasterEncryptedKey = pukMasterEncryptedKey;
-        cmkp.pukMasterCryptoIV     = pukMasterCryptoIV;
-        cmkp.pukKDFSalt            = pukKDFSalt;
+        NSString* keyChainID4EncryptedPinMasterKey = [NSString stringUniqueID];
+        NSString* keyChainID4EncryptedPUKMasterKey = [NSString stringUniqueID];
+        
+        if( ![SSKeychain setPassword:[pinMasterEncryptedKey hexStringValue]
+                          forService:kTresorKeychainServiceName
+                             account:keyChainID4EncryptedPinMasterKey
+                               error:&error]
+           )
+          goto cleanup;
+
+        if( ![SSKeychain setPassword:[pukMasterEncryptedKey hexStringValue]
+                          forService:kTresorKeychainServiceName
+                             account:keyChainID4EncryptedPUKMasterKey
+                               error:&error]
+           )
+          goto cleanup;
+        
+        
+        cmkp                                  = [CreateMasterKeysParameter new];
+        
+        cmkp.cryptoAlgorithm                  = encryptAlgo.name;
+        cmkp.kdfAlgorithm                     = deriveAlgo.name;
+        cmkp.kdfIterations                    = iterations;
+        
+        cmkp.keyChainID4EncryptedPinMasterKey = keyChainID4EncryptedPinMasterKey;
+        cmkp.pinMasterCryptoIV                = pinMasterCryptoIV;
+        cmkp.pinKDFSalt                       = pinKDFSalt;
+
+        cmkp.keyChainID4EncryptedPUKMasterKey = keyChainID4EncryptedPUKMasterKey;
+        cmkp.pukMasterCryptoIV                = pukMasterCryptoIV;
+        cmkp.pukKDFSalt                       = pukKDFSalt;
       }
       
 cleanup:
@@ -166,25 +189,25 @@ cleanup:
     });
   }]
   .then(^(CreateMasterKeysParameter* cmkp)
-  { MasterKey* masterKeyPIN = [NSEntityDescription insertNewObjectForEntityForName:@"MasterKey" inManagedObjectContext:_MOC];
-    masterKeyPIN.createts        = [NSDate date];
-    masterKeyPIN.encryptedkey    = cmkp.pinMasterEncryptedKey;
-    masterKeyPIN.cryptoiv        = [cmkp.pinMasterCryptoIV hexStringValue];
-    masterKeyPIN.cryptoalgorithm = cmkp.cryptoAlgorithm;
-    masterKeyPIN.authentication  = @"pin";
-    masterKeyPIN.kdfiterations   = [NSNumber numberWithUnsignedInteger:cmkp.kdfIterations];
-    masterKeyPIN.kdfsalt         = [cmkp.pinKDFSalt hexStringValue];
-    masterKeyPIN.kdf             = cmkp.kdfAlgorithm;
+  { MasterKey* masterKeyPIN              = [NSEntityDescription insertNewObjectForEntityForName:@"MasterKey" inManagedObjectContext:_MOC];
+    masterKeyPIN.createts                = [NSDate date];
+    masterKeyPIN.keychainid4encryptedkey = cmkp.keyChainID4EncryptedPinMasterKey;
+    masterKeyPIN.cryptoiv                = [cmkp.pinMasterCryptoIV hexStringValue];
+    masterKeyPIN.cryptoalgorithm         = cmkp.cryptoAlgorithm;
+    masterKeyPIN.authentication          = @"pin";
+    masterKeyPIN.kdfiterations           = [NSNumber numberWithUnsignedInteger:cmkp.kdfIterations];
+    masterKeyPIN.kdfsalt                 = [cmkp.pinKDFSalt hexStringValue];
+    masterKeyPIN.kdf                     = cmkp.kdfAlgorithm;
     
-    MasterKey* masterKeyPUK = [NSEntityDescription insertNewObjectForEntityForName:@"MasterKey" inManagedObjectContext:_MOC];
-    masterKeyPUK.createts        = masterKeyPIN.createts;
-    masterKeyPUK.encryptedkey    = cmkp.pukMasterEncryptedKey;
-    masterKeyPUK.cryptoiv        = [cmkp.pukMasterCryptoIV hexStringValue];
-    masterKeyPUK.cryptoalgorithm = cmkp.cryptoAlgorithm;
-    masterKeyPUK.authentication  = @"puk";
-    masterKeyPUK.kdfiterations   = [NSNumber numberWithUnsignedInteger:cmkp.kdfIterations];
-    masterKeyPUK.kdfsalt         = [cmkp.pukKDFSalt hexStringValue];
-    masterKeyPUK.kdf             = cmkp.kdfAlgorithm;
+    MasterKey* masterKeyPUK              = [NSEntityDescription insertNewObjectForEntityForName:@"MasterKey" inManagedObjectContext:_MOC];
+    masterKeyPUK.createts                = masterKeyPIN.createts;
+    masterKeyPUK.keychainid4encryptedkey = cmkp.keyChainID4EncryptedPUKMasterKey;
+    masterKeyPUK.cryptoiv                = [cmkp.pukMasterCryptoIV hexStringValue];
+    masterKeyPUK.cryptoalgorithm         = cmkp.cryptoAlgorithm;
+    masterKeyPUK.authentication          = @"puk";
+    masterKeyPUK.kdfiterations           = [NSNumber numberWithUnsignedInteger:cmkp.kdfIterations];
+    masterKeyPUK.kdfsalt                 = [cmkp.pukKDFSalt hexStringValue];
+    masterKeyPUK.kdf                     = cmkp.kdfAlgorithm;
     
     return PMKManifold(masterKeyPIN,masterKeyPUK);
   });
@@ -197,7 +220,7 @@ cleanup:
  */
 -(PMKPromise*) decryptedMasterKeyUsingPIN:(NSString*)pin
 { PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
-  { dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^
+  { dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
     { _NSLOG(@"decryptedMasterKeyUsingPIN.start");
       
       NSError* error              = nil;
@@ -217,7 +240,16 @@ cleanup:
         if( pinDerivedKey==nil )
           goto cleanup;
         
-        decryptedMasterKey = [NSData decryptPayload:self.encryptedkey
+        NSString* encryptedKeyString = [SSKeychain passwordForService:kTresorKeychainServiceName
+                                                              account:self.keychainid4encryptedkey
+                                                                error:&error];
+        
+        if( encryptedKeyString==nil )
+          goto cleanup;
+        
+        NSData* encryptedKey = [encryptedKeyString hexString2RawValue];
+        
+        decryptedMasterKey = [NSData decryptPayload:encryptedKey
                                      usingAlgorithm:encryptAlgo
                                     andDecryptedKey:pinDerivedKey
                                         andCryptoIV:[self.cryptoiv hexString2RawValue]

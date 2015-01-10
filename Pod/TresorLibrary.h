@@ -67,6 +67,7 @@
 #import "TresorUtil.h"
 #import "TresorModel.h"
 #import "TresorDefaults.h"
+#import "GCDQueue.h"
 
 #endif /* _TRESORLIBRARY_ */
 /*==========================================END-OF-FILE==========================================*/

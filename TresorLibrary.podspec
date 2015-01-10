@@ -30,9 +30,14 @@ Pod::Spec.new do |s|
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
 
+  s.subspec 'Util' do |ss|
+    ss.source_files = 'Pod/Util'
+  end
+
   s.subspec 'Crypto' do |ss|
     ss.xcconfig     = { 'OTHER_CFLAGS' => '-DUSE_SHA1' }
     ss.source_files = 'Pod/Crypto'
+    ss.dependency   'TresorLibrary/Util'
   end
 
   s.subspec 'Dao' do |ss|
@@ -42,7 +47,9 @@ Pod::Spec.new do |s|
 
     ss.dependency 'PromiseKit'
     ss.dependency 'JSONModel'
+    ss.dependency 'SSKeychain'
     ss.dependency 'TresorLibrary/Crypto'
+    ss.dependency 'TresorLibrary/Util'
   end
 
   s.subspec 'Gui' do |ss|
@@ -50,10 +57,6 @@ Pod::Spec.new do |s|
     ss.frameworks   = 'UIKit', 'AudioToolbox', 'CoreGraphics'
     ss.dependency   'SSKeychain'
     ss.dependency   'TresorLibrary/Crypto'
-  end
-
-  s.subspec 'Util' do |ss|
-    ss.source_files = 'Pod/Util'
   end
 
 end

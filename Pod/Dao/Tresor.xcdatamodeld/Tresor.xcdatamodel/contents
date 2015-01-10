@@ -31,11 +31,11 @@
         <attribute name="createts" attributeType="Date" syncable="YES"/>
         <attribute name="cryptoalgorithm" attributeType="String" syncable="YES"/>
         <attribute name="cryptoiv" attributeType="String" syncable="YES"/>
-        <attribute name="encryptedkey" attributeType="Binary" syncable="YES"/>
         <attribute name="failedauthentications" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="kdf" attributeType="String" syncable="YES"/>
         <attribute name="kdfiterations" attributeType="Integer 32" defaultValueString="0" syncable="YES"/>
         <attribute name="kdfsalt" attributeType="String" syncable="YES"/>
+        <attribute name="keychainid4encryptedkey" attributeType="String" syncable="YES"/>
         <attribute name="lockcount" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="lockts" optional="YES" attributeType="Date" syncable="YES"/>
         <relationship name="keys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Key" inverseName="masterkeys" inverseEntity="Key" syncable="YES"/>
@@ -63,7 +63,7 @@
         <element name="Audit" positionX="-477" positionY="288" width="128" height="133"/>
         <element name="Commit" positionX="-279" positionY="29" width="128" height="133"/>
         <element name="Key" positionX="81" positionY="29" width="128" height="133"/>
-        <element name="MasterKey" positionX="286" positionY="5" width="128" height="238"/>
+        <element name="MasterKey" positionX="286" positionY="5" width="128" height="240"/>
         <element name="Payload" positionX="-90" positionY="29" width="128" height="133"/>
         <element name="Vault" positionX="-477" positionY="81" width="128" height="163"/>
     </elements>

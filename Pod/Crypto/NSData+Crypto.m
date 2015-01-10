@@ -18,6 +18,7 @@
 #import "Macros.h"
 #import "JSONModel.h"
 #import "NSString+Date.h"
+#import "GCDQueue.h"
 
 #include "md5.h"
 #include "sha1.h"
@@ -445,7 +446,7 @@ cleanUp:
   
   PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
   {
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_DEFAULT, 0), ^
+    dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
     { _NSLOG(@"generatePINWithLength.start");
       
       NSData*    passwordData = [NSData dataWithRandom:pinLength];

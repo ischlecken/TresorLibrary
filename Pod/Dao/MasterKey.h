@@ -19,13 +19,15 @@
 #import <CoreData/CoreData.h>
 #import "PromiseKit.h"
 
+#define kTresorKeychainServiceName @"net.ischlecken.tresor.masterkeys"
+
 @class Key;
 @class Vault;
 
 @interface MasterKey : NSManagedObject
 @property (nonatomic, retain) NSDate*   createts;
 @property (nonatomic, retain) NSString* cryptoalgorithm;
-@property (nonatomic, retain) NSData*   encryptedkey;
+@property (nonatomic, retain) NSString* keychainid4encryptedkey;
 @property (nonatomic, retain) NSString* cryptoiv;
 @property (nonatomic, retain) NSDate*   lockts;
 @property (nonatomic, retain) NSNumber* lockcount;
