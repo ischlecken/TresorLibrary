@@ -46,7 +46,6 @@
 #import "ColorScheme.h"
 #import "SectionInfo.h"
 #import "FileUtil.h"
-#import "PromiseKit+Tresor.h"
 
 #import "NSData+Crypto.h"
 #import "NSIndexPath+Util.h"

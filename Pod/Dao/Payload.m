@@ -18,13 +18,18 @@
 
 #import "Payload.h"
 #import "Key.h"
-#import "Commit.h"  
+#import "Commit.h"
+#import "Vault.h"
+#import "MasterKey.h"
 #import "DecryptedObjectCache.h"
 #import "CryptoService.h"
 #import "TresorDaoCategories.h"
 #import "TresorModel.h"
 #import "NSString+Crypto.h"
 #import "TresorAlgorithmInfo.h"
+#import "TresorError.h"
+#import "GCDQueue.h"
+#import "Macros.h"
 
 @implementation Payload
 
@@ -95,6 +100,15 @@
 }
 
 
+/**
+ *
+ */
+-(Vault*) vault
+{ Vault* result = [[self.commits anyObject] vault];
+  
+  return result;
+}
+
 #pragma mark PayloadItemList protocol
 
 /**
@@ -130,6 +144,64 @@
   return result;
 }
 
+
+/**
+ *
+ */
+-(PMKPromise*) decryptPayloadUsingDecryptedMasterKey:(NSData*)decryptedMasterKey
+{ PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
+  { NSError* error = nil;
+    
+    { if( self.key==nil )
+      { error = _TRESORERROR(TresorErrorKeyForPayloadNotSet);
+        
+        goto cleanup0;
+      } /* of if */
+      
+      MasterKey* masterKey = [[self vault] pinMasterKey];
+      if( masterKey==nil )
+      { error = _TRESORERROR(TresorErrorCouldNotFindPINMasterKey);
+        
+        goto cleanup0;
+      } /* of if */
+      
+      dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
+      { _NSLOG(@"decryptPayloadWithDecryptedMasterKey.start");
+
+        NSError* error            = nil;
+        NSData*  decryptedPayload = nil;
+        
+        { NSData* decryptedKey = [masterKey decryptKey:self.key.encryptedkey usingDecryptedMasterKey:decryptedMasterKey andError:&error];
+        
+          if( decryptedKey==nil )
+            goto  cleanup1;
+          
+          decryptedPayload = [self.key decryptPayload:self.encryptedpayload usingDecryptedKey:decryptedKey andError:&error];
+          
+          if( decryptedPayload==nil )
+            goto cleanup1;
+          
+          [[DecryptedObjectCache sharedInstance] setDecryptedObject:decryptedPayload forUniqueId:[self uniqueObjectId]];
+        }
+        
+      cleanup1:
+        if( decryptedPayload )
+          fulfill(self);
+        else
+          reject(error);
+        
+        _NSLOG(@"decryptPayloadWithDecryptedMasterKey.stop");
+      });
+    }
+    
+  cleanup0:
+      if( error )
+        reject(error);
+    
+  }];
+  
+  return result;
+}
 
 
 /**

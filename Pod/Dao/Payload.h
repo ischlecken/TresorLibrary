@@ -24,6 +24,7 @@
 
 @class Key;
 @class Commit;
+@class Vault;
 
 @interface Payload : NSManagedObject<PayloadItemList,Visit>
 
@@ -39,9 +40,13 @@
 -(id)          decryptedPayload;
 -(BOOL)        isPayloadItemList;
 
+-(Vault*)      vault;
+
+-(PMKPromise*) decryptPayloadUsingDecryptedMasterKey:(NSData*)decryptedMasterKey;
+
+
 +(Payload*)    payloadWithRandomKey:(NSError**)error;
 +(PMKPromise*) payloadWithObject:(id)object;
-
 @end
 
 @interface Payload (CoreDataGeneratedAccessors)

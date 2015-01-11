@@ -53,6 +53,7 @@
 -(BOOL)        cancelNextCommit:(NSError**)error;
 
 -(NSArray*)    allCommits:(NSError**)error;
+-(MasterKey*)  pinMasterKey;
 
 +(PMKPromise*) vaultObjectWithParameter:(VaultParameter*)parameter;
 +(Vault*)      findVaultByName:(NSString*)vaultName andError:(NSError**)error;

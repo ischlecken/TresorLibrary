@@ -44,6 +44,8 @@ enum
   TresorErrorCouldNotSerializePayload   = -31,
   TresorErrorCouldNotDeserializePayload = -32,
   
+  TresorErrorCouldNotFindPINMasterKey   = -33,
+  TresorErrorKeyForPayloadNotSet        = -34,
 };
 
 #define _TRESORERROR(errCode) [[NSError alloc] initWithDomain:kTresorErrorDomain code:errCode userInfo:nil]

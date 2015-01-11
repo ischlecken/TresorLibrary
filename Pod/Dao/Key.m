@@ -29,7 +29,6 @@
 @dynamic cryptoiv;
 @dynamic encryptedkey;
 @dynamic payload;
-@dynamic masterkeys;
 
 #pragma mark dao extension
 
@@ -61,7 +60,7 @@
 /**
  *
  */
-+(Key*) keyWithRandomKey:(NSData*)passwordKey andKeySize:(NSUInteger)keySize andError:(NSError**)error
++(Key*) keyWithRandomKey:(NSData*)decryptedMasterKey andKeySize:(NSUInteger)keySize andError:(NSError**)error
 { Key* result = [NSEntityDescription insertNewObjectForEntityForName:@"Key" inManagedObjectContext:_MOC];
   
   TresorAlgorithmInfo*  vai          = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
@@ -70,9 +69,25 @@
   result.createts         = [NSDate date];
   result.cryptoiv         = [[NSData dataWithRandom:vai.blockSize] hexStringValue];
   result.cryptoalgorithm  = vai.name;
-  result.encryptedkey     = [decryptedKey encryptWithAlgorithm:vai usingKey:passwordKey andIV:[result.cryptoiv hexString2RawValue] error:error];
+  result.encryptedkey     = [decryptedKey encryptWithAlgorithm:vai
+                                                      usingKey:decryptedMasterKey
+                                                         andIV:[result.cryptoiv hexString2RawValue]
+                                                         error:error];
   
   _MOC_SAVERETURN;
+}
+
+
+/**
+ *
+ */
+-(NSData*) decryptPayload:(NSData*)payload usingDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error
+{ NSData* result = [payload decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
+                                        usingKey:decryptedKey
+                                           andIV:[self.cryptoiv hexString2RawValue]
+                                           error:error];
+  
+  return result;
 }
 
 @end

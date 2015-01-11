@@ -18,7 +18,9 @@
 #import "CryptoService.h"
 #import "DecryptedObjectCache.h"
 #import "TresorModel.h"
- 
+#import "TresorError.h"
+#import "Macros.h"
+
 #import "TresorDaoCategories.h"
 #import "JSONModel.h"
 #import "NSString+Date.h"
@@ -41,19 +43,6 @@
   return _inst;
 }
 
-
-/**
- *
- */
-+(id) decryptPayloadUsing:(NSData*)payload usingKey:(Key*)keyForPayload andDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error
-{ id result = [NSData decryptPayload:payload
-                      usingAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:keyForPayload.cryptoalgorithm]
-                     andDecryptedKey:decryptedKey
-                         andCryptoIV:[keyForPayload.cryptoiv hexString2RawValue]
-                            andError:error];
-  
-  return result;
-}
 
 /**
  *
@@ -85,24 +74,8 @@
     
     if( decryptedPayloadKey )
       result = decryptedPayloadKey
-      .then(^(NSData* passwordKey)
-      { NSError* error = nil;
-        Key*     key   = payload.key;
-        
-        if( key==nil )
-          return (id)error;
-        
-        id decryptedPayload = [CryptoService decryptPayloadUsing:payload.encryptedpayload usingKey:key andDecryptedKey:passwordKey andError:&error];
-        
-        [[DecryptedObjectCache sharedInstance] setDecryptedObject:decryptedPayload forUniqueId:[payload uniqueObjectId]];
-        
-        /*
-        if( decryptedPayload )
-          _NSLOG(@"payload %@ decrypted:[%@]",[payload uniqueObjectId],decryptedPayload);
-        */
-        
-        return decryptedPayload ? (id) payload : (id)error;
-      });
+      .then(^(NSData* decryptedMasterKey)
+      { return [payload decryptPayloadUsingDecryptedMasterKey:decryptedMasterKey]; });
   } /* of else */
   
   return result;
@@ -121,24 +94,16 @@
   
   if( decryptedPayloadKey )
     result = decryptedPayloadKey
-    .then(^(NSData* passwordKey)
+    .then(^(NSData* decryptedMasterKey)
     { NSError* error = nil;
       Key*     key   = payload.key;
       
       if( key==nil )
         return (id)error;
       
-      payload.encryptedpayload = [CryptoService encryptPayload:object usingKey:key andDecryptedKey:passwordKey andError:&error];
+      payload.encryptedpayload = [CryptoService encryptPayload:object usingKey:key andDecryptedKey:decryptedMasterKey andError:&error];
       
-      if( payload.encryptedpayload )
-        [_MOC save:&error];
-      
-      /*
-      if( payload.encryptedpayload )
-        _NSLOG(@"payload %@ encrypted.",[payload uniqueObjectId]);
-      */
-      
-      return payload.encryptedpayload ? (id)payload : (id)error;
+      return payload.encryptedpayload && [_MOC save:&error] ? (id)payload : (id)error;
     });
   
   return result;

@@ -57,7 +57,6 @@
 @dynamic lockcount;
 @dynamic failedauthentications;
 @dynamic authentication;
-@dynamic keys;
 @dynamic vault;
 
 @dynamic kdfsalt;
@@ -149,6 +148,8 @@
         NSString* keyChainID4EncryptedPinMasterKey = [NSString stringUniqueID];
         NSString* keyChainID4EncryptedPUKMasterKey = [NSString stringUniqueID];
         
+        [SSKeychain setAccessibilityType:kSecAttrAccessibleWhenUnlocked];
+        
         if( ![SSKeychain setPassword:[pinMasterEncryptedKey hexStringValue]
                           forService:kTresorKeychainServiceName
                              account:keyChainID4EncryptedPinMasterKey
@@ -194,7 +195,7 @@ cleanup:
     masterKeyPIN.keychainid4encryptedkey = cmkp.keyChainID4EncryptedPinMasterKey;
     masterKeyPIN.cryptoiv                = [cmkp.pinMasterCryptoIV hexStringValue];
     masterKeyPIN.cryptoalgorithm         = cmkp.cryptoAlgorithm;
-    masterKeyPIN.authentication          = @"pin";
+    masterKeyPIN.authentication          = kMasterKeyPINAuthentication;
     masterKeyPIN.kdfiterations           = [NSNumber numberWithUnsignedInteger:cmkp.kdfIterations];
     masterKeyPIN.kdfsalt                 = [cmkp.pinKDFSalt hexStringValue];
     masterKeyPIN.kdf                     = cmkp.kdfAlgorithm;
@@ -204,7 +205,7 @@ cleanup:
     masterKeyPUK.keychainid4encryptedkey = cmkp.keyChainID4EncryptedPUKMasterKey;
     masterKeyPUK.cryptoiv                = [cmkp.pukMasterCryptoIV hexStringValue];
     masterKeyPUK.cryptoalgorithm         = cmkp.cryptoAlgorithm;
-    masterKeyPUK.authentication          = @"puk";
+    masterKeyPUK.authentication          = kMasterKeyPUKAuthentication;
     masterKeyPUK.kdfiterations           = [NSNumber numberWithUnsignedInteger:cmkp.kdfIterations];
     masterKeyPUK.kdfsalt                 = [cmkp.pukKDFSalt hexStringValue];
     masterKeyPUK.kdf                     = cmkp.kdfAlgorithm;
@@ -254,9 +255,6 @@ cleanup:
                                     andDecryptedKey:pinDerivedKey
                                         andCryptoIV:[self.cryptoiv hexString2RawValue]
                                            andError:&error];
-        
-        
-        
       }
       
     cleanup:
@@ -271,6 +269,18 @@ cleanup:
       _NSLOG(@"decryptedMasterKeyUsingPIN.stop");
     });
   }];
+  
+  return result;
+}
+
+/**
+ *
+ */
+-(NSData*) decryptKey:(NSData*)encryptedKey usingDecryptedMasterKey:(NSData*)decryptedMasterKey andError:(NSError**)error
+{ NSData* result = [encryptedKey decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
+                                             usingKey:decryptedMasterKey
+                                                andIV:[self.cryptoiv hexString2RawValue]
+                                                error:error];
   
   return result;
 }

@@ -327,14 +327,13 @@
   if( vault && (allCommits=[vault allCommits:error]) )
   { for( Commit* c in allCommits )
     { for( Payload* p in c.payloads )
-      { for( MasterKey* mk in p.key.masterkeys )
-          [_MOC deleteObject:mk];
-        
         [_MOC deleteObject:p];
-      } /* of for */
       
       [_MOC deleteObject:c];
     } /* of for */
+    
+    for( MasterKey* mk in vault.masterkeys )
+      [_MOC deleteObject:mk];
     
     [_MOC deleteObject:vault];
     
@@ -346,5 +345,27 @@ cleanup:
   return result;
 }
 
+
+/**
+ *
+ */
+-(MasterKey*)  pinMasterKey
+{ MasterKey* result = nil;
+  
+  for( MasterKey* mk in self.masterkeys )
+  {
+    if( [mk.authentication isEqualToString:kMasterKeyPINAuthentication] )
+    {
+      if( mk.lockts==nil )
+      { result = mk;
+        
+        break;
+      } /* of if */
+    } /* of if */
+    
+  } /* of for */
+  
+  return result;
+}
 
 @end

@@ -23,7 +23,6 @@
         <attribute name="cryptoalgorithm" attributeType="String" maxValueString="32" syncable="YES"/>
         <attribute name="cryptoiv" attributeType="String" maxValueString="100" syncable="YES"/>
         <attribute name="encryptedkey" attributeType="Binary" syncable="YES"/>
-        <relationship name="masterkeys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MasterKey" inverseName="keys" inverseEntity="MasterKey" syncable="YES"/>
         <relationship name="payload" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Payload" inverseName="key" inverseEntity="Payload" syncable="YES"/>
     </entity>
     <entity name="MasterKey" representedClassName="MasterKey" syncable="YES">
@@ -38,7 +37,6 @@
         <attribute name="keychainid4encryptedkey" attributeType="String" syncable="YES"/>
         <attribute name="lockcount" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
         <attribute name="lockts" optional="YES" attributeType="Date" syncable="YES"/>
-        <relationship name="keys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Key" inverseName="masterkeys" inverseEntity="Key" syncable="YES"/>
         <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="masterkeys" inverseEntity="Vault" syncable="YES"/>
     </entity>
     <entity name="Payload" representedClassName="Payload" syncable="YES">
@@ -60,10 +58,10 @@
         <relationship name="masterkeys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MasterKey" inverseName="vault" inverseEntity="MasterKey" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Audit" positionX="-477" positionY="288" width="128" height="133"/>
+        <element name="Audit" positionX="-477" positionY="380" width="128" height="133"/>
         <element name="Commit" positionX="-279" positionY="29" width="128" height="133"/>
-        <element name="Key" positionX="81" positionY="29" width="128" height="133"/>
-        <element name="MasterKey" positionX="286" positionY="5" width="128" height="240"/>
+        <element name="Key" positionX="81" positionY="44" width="128" height="118"/>
+        <element name="MasterKey" positionX="79" positionY="198" width="128" height="223"/>
         <element name="Payload" positionX="-90" positionY="29" width="128" height="133"/>
         <element name="Vault" positionX="-477" positionY="81" width="128" height="163"/>
     </elements>

@@ -27,7 +27,6 @@
 
 +(CryptoService*) sharedInstance;
 
-+(id)             decryptPayloadUsing:(NSData*)payload usingKey:(Key*)keyForPayload andDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error;
 +(NSData*)        encryptPayload:(id)payloadObject usingKey:(Key*)keyForPayload andDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error;
 
 -(PMKPromise*)    decryptPayload:(Payload*)payload;

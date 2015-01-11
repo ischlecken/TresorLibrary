@@ -19,9 +19,10 @@
 #import <CoreData/CoreData.h>
 #import "PromiseKit.h"
 
-#define kTresorKeychainServiceName @"net.ischlecken.tresor.masterkeys"
+#define kTresorKeychainServiceName  @"net.ischlecken.tresor.masterkeys"
+#define kMasterKeyPINAuthentication @"pin"
+#define kMasterKeyPUKAuthentication @"puk"
 
-@class Key;
 @class Vault;
 
 @interface MasterKey : NSManagedObject
@@ -36,19 +37,14 @@
 @property (nonatomic, retain) NSString* kdfsalt;
 @property (nonatomic, retain) NSString* kdf;
 @property (nonatomic, retain) NSNumber* kdfiterations;
-@property (nonatomic, retain) NSSet*    keys;
 @property (nonatomic, retain) Vault*    vault;
 
 +(PMKPromise*) masterKeyWithPin:(NSString*)pin andPUK:(NSString*)puk;
 -(PMKPromise*) decryptedMasterKeyUsingPIN:(NSString*)pin;
+
+-(NSData*)     decryptKey:(NSData*)encryptedKey usingDecryptedMasterKey:(NSData*)decryptedMasterKey andError:(NSError**)error;
 @end
 
-@interface MasterKey (CoreDataGeneratedAccessors)
--(void)addKeysObject:(Key*)value;
--(void)removeKeysObject:(Key*)value;
--(void)addKeys:(NSSet*)values;
--(void)removeKeys:(NSSet*)values;
-@end
 
 /**
 
