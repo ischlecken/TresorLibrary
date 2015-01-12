@@ -26,8 +26,6 @@
 #import "NSData+Crypto.h"
 
 
-#define _DUMMYPASSWORD            [NSData dataWithUTF8String:@"01234567891123456789212345678931"]
-
 #define _TRESORMODEL [TresorModel sharedInstance]
 #define _MOC         _TRESORMODEL.managedObjectContext
 #define _TRESORQUEUE _TRESORMODEL.cryptionQueue

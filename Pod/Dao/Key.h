@@ -29,11 +29,10 @@
 @property (nonatomic, retain) NSString* cryptoiv;
 @property (nonatomic, retain) NSData*   encryptedkey;
 @property (nonatomic, retain) Payload*  payload;
-#pragma mark dao extension
--(NSData*) decryptPayload:(NSData*)payload usingDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error;
 
-+(Key*)    keyWithEncryptedKey:(NSData*)encryptedKey andCryptoIV:(NSString*)cryptoIV andCryptoAlgorith:(NSString*)cryptoAlgorithm andError:(NSError**)error;
-+(Key*)    keyWithRandomKey:(NSData*)decryptedMasterKey andKeySize:(NSUInteger)keySize andError:(NSError**)error;
+#pragma mark dao extension
+
+-(NSData*) decryptKeyUsingDecryptedMasterKey:(NSData*)decryptedMasterKey andError:(NSError**)error;
 
 @end
 

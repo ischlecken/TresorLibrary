@@ -31,6 +31,24 @@
 #import "GCDQueue.h"
 #import "Macros.h"
 
+
+#pragma mark - CreatePayloadParameter
+
+@interface CreatePayloadParameter : NSObject
+@property NSString*  cryptoAlgorithm;
+
+@property NSData*    keyCryptoIV;
+@property NSData*    payloadCryptoIV;
+
+@property NSData*    encryptedKey;
+@property NSData*    encryptedPayload;
+@end
+
+@implementation CreatePayloadParameter
+@end
+
+#pragma mark - Payload
+
 @implementation Payload
 
 @dynamic createts;
@@ -171,12 +189,15 @@
         NSError* error            = nil;
         NSData*  decryptedPayload = nil;
         
-        { NSData* decryptedKey = [masterKey decryptKey:self.key.encryptedkey usingDecryptedMasterKey:decryptedMasterKey andError:&error];
+        { NSData* decryptedKey = [self.key decryptKeyUsingDecryptedMasterKey:decryptedMasterKey andError:&error];
         
           if( decryptedKey==nil )
             goto  cleanup1;
           
-          decryptedPayload = [self.key decryptPayload:self.encryptedpayload usingDecryptedKey:decryptedKey andError:&error];
+          decryptedPayload = [self.encryptedpayload decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
+                                                                usingKey:decryptedKey
+                                                                   andIV:[self.cryptoiv hexString2RawValue]
+                                                                   error:&error];
           
           if( decryptedPayload==nil )
             goto cleanup1;
@@ -207,46 +228,83 @@
 /**
  *
  */
-+(Payload*) payloadWithRandomKey:(NSError**)error
-{ Payload*              result = nil;
-  TresorAlgorithmInfo*  vai    = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
-  Key*                  key    = [Key keyWithRandomKey:_DUMMYPASSWORD andKeySize:vai.keySize andError:error];
++(PMKPromise*) payloadWithObject:(id)object inCommit:(Commit*)commit usingDecryptedMasterKey:(NSData*)decryptedMasterKey
+{ PMKPromise* result = nil;
   
-  if( key )
-  { result = [NSEntityDescription insertNewObjectForEntityForName:@"Payload" inManagedObjectContext:_MOC];
-  
-    result.createts         = [NSDate date];
-    result.cryptoiv         = [[NSData dataWithRandom:vai.blockSize] hexStringValue];
-    result.cryptoalgorithm  = vai.name;
-    
-    key.payload = result;
-  } /* of if */
+  if( object && commit && commit.vault && decryptedMasterKey )
+    result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
+    {
+      dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
+      { _NSLOG(@"payloadWithObject.start");
+        
+        NSError*                error            = nil;
+        NSData*                 encryptedKey     = nil;
+        NSData*                 encryptedPayload = nil;
+        TresorAlgorithmInfo*    vai              = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
+        CreatePayloadParameter* cpp              = nil;
+        
+        { NSData* decryptedKey    = [NSData dataWithRandom:vai.keySize];
+          NSData* keyCryptoIV     = [NSData dataWithRandom:vai.blockSize];
+          NSData* payloadCryptoIV = [NSData dataWithRandom:vai.blockSize];
+          
+          encryptedKey = [decryptedKey encryptWithAlgorithm:vai
+                                                   usingKey:decryptedKey
+                                                      andIV:keyCryptoIV
+                                                      error:&error];
+          if( encryptedKey==nil )
+            goto cleanup;
+          
+          encryptedPayload = [NSData encryptPayload:object
+                                     usingAlgorithm:vai
+                                    andDecryptedKey:decryptedKey
+                                        andCryptoIV:payloadCryptoIV
+                                           andError:&error];
+          
+          if( encryptedPayload==nil )
+            goto cleanup;
+          
+          cpp = [CreatePayloadParameter new];
+           
+          cpp.cryptoAlgorithm  = vai.name;
+          
+          cpp.keyCryptoIV      = keyCryptoIV;
+          cpp.encryptedKey     = encryptedKey;
+          
+          cpp.payloadCryptoIV  = payloadCryptoIV;
+          cpp.encryptedPayload = encryptedPayload;
+        }
+        
+      cleanup:
+        if( cpp )
+          fulfiller(cpp);
+        else
+          rejecter(error);
+        
+        _NSLOG(@"payloadWithObject.stop");
+      });
+    }]
+    .then(^(CreatePayloadParameter* cpp)
+    { Payload* payload = [NSEntityDescription insertNewObjectForEntityForName:@"Payload" inManagedObjectContext:_MOC];
+      Key*     key     = [NSEntityDescription insertNewObjectForEntityForName:@"Key"     inManagedObjectContext:_MOC];
+      NSError* error   = nil;
+      
+      key.createts             = [NSDate date];
+      key.cryptoiv             = [cpp.keyCryptoIV hexStringValue];
+      key.cryptoalgorithm      = cpp.cryptoAlgorithm;
+      key.encryptedkey         = cpp.encryptedKey;
+      
+      payload.createts         = key.createts;
+      payload.cryptoiv         = [cpp.payloadCryptoIV hexStringValue];
+      payload.cryptoalgorithm  = cpp.cryptoAlgorithm;
+      payload.encryptedpayload = cpp.encryptedPayload;
+      payload.key              = key;
+      
+      [payload addCommitsObject:commit];
+      
+      return payload && key && [_MOC save:&error] ? payload : error;
+    });
   
   return result;
-}
-
-/**
- *
- */
-+(PMKPromise*) payloadWithObject:(id)object
-{ PMKPromise* promise = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
-  { NSError*    error   = nil;
-    PMKPromise* promise = nil;
-    Payload*    payload = [Payload payloadWithRandomKey:&error];
-     
-    if( payload )
-      promise = [[CryptoService sharedInstance] encryptPayload:payload forObject:object];
-    
-    if( promise )
-    { //_NSLOG(@"new payload:%@",payload.uniqueObjectId);
-      
-      fulfiller(promise);
-    } /* of if */
-    else
-      rejecter(error);
-  }];
-  
-  return promise;
 }
 
 @end

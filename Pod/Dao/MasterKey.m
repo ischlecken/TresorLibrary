@@ -273,16 +273,5 @@ cleanup:
   return result;
 }
 
-/**
- *
- */
--(NSData*) decryptKey:(NSData*)encryptedKey usingDecryptedMasterKey:(NSData*)decryptedMasterKey andError:(NSError**)error
-{ NSData* result = [encryptedKey decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
-                                             usingKey:decryptedMasterKey
-                                                andIV:[self.cryptoiv hexString2RawValue]
-                                                error:error];
-  
-  return result;
-}
 
 @end

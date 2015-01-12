@@ -44,9 +44,7 @@
 
 -(PMKPromise*) decryptPayloadUsingDecryptedMasterKey:(NSData*)decryptedMasterKey;
 
-
-+(Payload*)    payloadWithRandomKey:(NSError**)error;
-+(PMKPromise*) payloadWithObject:(id)object;
++(PMKPromise*) payloadWithObject:(id)object inCommit:(Commit*)commit usingDecryptedMasterKey:(NSData*)decryptedMasterKey;
 @end
 
 @interface Payload (CoreDataGeneratedAccessors)

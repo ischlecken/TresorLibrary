@@ -20,6 +20,10 @@
 #import "TresorModel.h"
 #import "TresorError.h"
 #import "Macros.h"
+#import "Payload.h"
+#import "Key.h"
+#import "MasterKey.h"
+#import "Commit.h"
 
 #import "TresorDaoCategories.h"
 #import "JSONModel.h"
@@ -47,18 +51,6 @@
 /**
  *
  */
-+(NSData*) encryptPayload:(id)payloadObject usingKey:(Key*)keyForPayload andDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error
-{ NSData* result = [NSData encryptPayload:payloadObject
-                           usingAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:keyForPayload.cryptoalgorithm]
-                          andDecryptedKey:decryptedKey
-                              andCryptoIV:[keyForPayload.cryptoiv hexString2RawValue]
-                                 andError:error];
-  return result;
-}
-
-/**
- *
- */
 -(PMKPromise*) decryptPayload:(Payload*)payload
 { PMKPromise* result = nil;
   
@@ -70,12 +62,18 @@
   if( decryptedPayload )
     result = [PMKPromise promiseWithValue:payload];
   else
-  { PMKPromise* decryptedPayloadKey = [self.delegate decryptedPayloadKeyPromiseForPayload:payload];
+  { MasterKey* masterKey = [[payload vault] pinMasterKey];
     
-    if( decryptedPayloadKey )
-      result = decryptedPayloadKey
-      .then(^(NSData* decryptedMasterKey)
-      { return [payload decryptPayloadUsingDecryptedMasterKey:decryptedMasterKey]; });
+    if( masterKey==nil )
+      result = [PMKPromise promiseWithValue:_TRESORERROR(TresorErrorCouldNotFindPINMasterKey)];
+    else
+    { PMKPromise* decryptedPayloadKey = [self.delegate decryptedMasterKey:masterKey];
+      
+      if( decryptedPayloadKey )
+        result = decryptedPayloadKey
+        .then(^(NSData* decryptedMasterKey)
+        { return [payload decryptPayloadUsingDecryptedMasterKey:decryptedMasterKey]; });
+    } /* of else */
   } /* of else */
   
   return result;
@@ -84,27 +82,23 @@
 /**
  *
  */
--(PMKPromise*) encryptPayload:(Payload*)payload forObject:(id)object
+-(PMKPromise*) encryptObject:(id)object forCommit:(Commit*)commit
 { PMKPromise* result = nil;
   
   if( self.delegate==nil )
     @throw [NSException exceptionWithName:@"DelegateNotSetException" reason:nil userInfo:nil];
   
-  PMKPromise* decryptedPayloadKey = [self.delegate decryptedPayloadKeyPromiseForPayload:payload];
-  
-  if( decryptedPayloadKey )
-    result = decryptedPayloadKey
-    .then(^(NSData* decryptedMasterKey)
-    { NSError* error = nil;
-      Key*     key   = payload.key;
-      
-      if( key==nil )
-        return (id)error;
-      
-      payload.encryptedpayload = [CryptoService encryptPayload:object usingKey:key andDecryptedKey:decryptedMasterKey andError:&error];
-      
-      return payload.encryptedpayload && [_MOC save:&error] ? (id)payload : (id)error;
-    });
+  MasterKey* masterKey = [commit.vault pinMasterKey];
+  if( masterKey==nil )
+    result = [PMKPromise promiseWithValue:_TRESORERROR(TresorErrorCouldNotFindPINMasterKey)];
+  else
+  { PMKPromise* decryptedPayloadKey = [self.delegate decryptedMasterKey:masterKey];
+    
+    if( decryptedPayloadKey )
+      result = decryptedPayloadKey
+      .then(^(NSData* decryptedMasterKey)
+      { return [Payload payloadWithObject:object inCommit:commit usingDecryptedMasterKey:decryptedMasterKey]; });
+  } /* of else */
   
   return result;
 }

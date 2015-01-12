@@ -45,47 +45,11 @@
 /**
  *
  */
-+(Key*) keyWithEncryptedKey:(NSData*)encryptedKey andCryptoIV:(NSString*)cryptoIV andCryptoAlgorith:(NSString*)cryptoAlgorithm andError:(NSError**)error
-{ Key* result = [NSEntityDescription insertNewObjectForEntityForName:@"Key" inManagedObjectContext:_MOC];
-  
-  result.createts        = [NSDate date];
-  result.encryptedkey    = encryptedKey;
-  result.cryptoiv        = cryptoIV;
-  result.cryptoalgorithm = cryptoAlgorithm;
-  
-  _MOC_SAVERETURN;
-}
-
-
-/**
- *
- */
-+(Key*) keyWithRandomKey:(NSData*)decryptedMasterKey andKeySize:(NSUInteger)keySize andError:(NSError**)error
-{ Key* result = [NSEntityDescription insertNewObjectForEntityForName:@"Key" inManagedObjectContext:_MOC];
-  
-  TresorAlgorithmInfo*  vai          = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
-  NSData*               decryptedKey = [NSData dataWithRandom:keySize];
-  
-  result.createts         = [NSDate date];
-  result.cryptoiv         = [[NSData dataWithRandom:vai.blockSize] hexStringValue];
-  result.cryptoalgorithm  = vai.name;
-  result.encryptedkey     = [decryptedKey encryptWithAlgorithm:vai
-                                                      usingKey:decryptedMasterKey
-                                                         andIV:[result.cryptoiv hexString2RawValue]
-                                                         error:error];
-  
-  _MOC_SAVERETURN;
-}
-
-
-/**
- *
- */
--(NSData*) decryptPayload:(NSData*)payload usingDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error
-{ NSData* result = [payload decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
-                                        usingKey:decryptedKey
-                                           andIV:[self.cryptoiv hexString2RawValue]
-                                           error:error];
+-(NSData*) decryptKeyUsingDecryptedMasterKey:(NSData*)decryptedMasterKey andError:(NSError**)error
+{ NSData* result = [self.encryptedkey decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
+                                                  usingKey:decryptedMasterKey
+                                                     andIV:[self.cryptoiv hexString2RawValue]
+                                                     error:error];
   
   return result;
 }

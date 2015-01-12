@@ -28,8 +28,8 @@
 @interface MasterKey : NSManagedObject
 @property (nonatomic, retain) NSDate*   createts;
 @property (nonatomic, retain) NSString* cryptoalgorithm;
-@property (nonatomic, retain) NSString* keychainid4encryptedkey;
 @property (nonatomic, retain) NSString* cryptoiv;
+@property (nonatomic, retain) NSString* keychainid4encryptedkey;
 @property (nonatomic, retain) NSDate*   lockts;
 @property (nonatomic, retain) NSNumber* lockcount;
 @property (nonatomic, retain) NSNumber* failedauthentications;
@@ -42,7 +42,6 @@
 +(PMKPromise*) masterKeyWithPin:(NSString*)pin andPUK:(NSString*)puk;
 -(PMKPromise*) decryptedMasterKeyUsingPIN:(NSString*)pin;
 
--(NSData*)     decryptKey:(NSData*)encryptedKey usingDecryptedMasterKey:(NSData*)decryptedMasterKey andError:(NSError**)error;
 @end
 
 

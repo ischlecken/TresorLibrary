@@ -15,21 +15,24 @@
  *
  * Copyright (c) 2014 ischlecken.
  */
-#import "Payload.h"
-#import "Key.h"
 
-@protocol DecryptedPayloadKeyPromiseDelegate <NSObject>
--(PMKPromise*) decryptedPayloadKeyPromiseForPayload:(Payload*)payload;
+#import "Promise.h"
+
+@class Key;
+@class MasterKey;
+@class Commit;
+@class Payload;
+
+@protocol DecryptedMasterKeyPromiseDelegate <NSObject>
+-(PMKPromise*) decryptedMasterKey:(MasterKey*)masterKey;
 @end
 
 @interface CryptoService: NSObject
-@property(weak) id<DecryptedPayloadKeyPromiseDelegate> delegate;
+@property(weak) id<DecryptedMasterKeyPromiseDelegate> delegate;
 
 +(CryptoService*) sharedInstance;
 
-+(NSData*)        encryptPayload:(id)payloadObject usingKey:(Key*)keyForPayload andDecryptedKey:(NSData*)decryptedKey andError:(NSError**)error;
-
 -(PMKPromise*)    decryptPayload:(Payload*)payload;
--(PMKPromise*)    encryptPayload:(Payload*)payload forObject:(id)object;
+-(PMKPromise*)    encryptObject:(id)object forCommit:(Commit*)commit;
 @end
 

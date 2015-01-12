@@ -111,7 +111,7 @@
  *
  */
 -(PMKPromise*) createPayloadObject
-{ PMKPromise* promise = [Payload payloadWithObject:[PayloadItemList new]]
+{ PMKPromise* promise = [[CryptoService sharedInstance] encryptObject:[PayloadItemList new] forCommit:self]
   .then(^(Payload* payload)
   { self.payloadoid = [payload uniqueObjectId];
     
@@ -312,7 +312,7 @@
         [self removePayloadsObject:oldChildPayload];
         [self addPayloadsObject:newChildPayload];
         
-        return (id)[Payload payloadWithObject:newPil];
+        return (id)[[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
       } copy]);
   
   result = result.then(^(Payload* newPayload)
@@ -372,7 +372,7 @@
     .then(^(NSMutableArray* promisedParentPath)
     { parentPath = promisedParentPath;
      
-      return [Payload payloadWithObject:obj];
+      return [[CryptoService sharedInstance] encryptObject:obj forCommit:self];
     })
     .then(^(Payload* textPayload)
     { [self addPayloadsObject:textPayload];
@@ -389,7 +389,7 @@
       
       PayloadItem*     pi     = [[PayloadItem alloc] initWithTitle:title andSubtitle:subtitle andIcon:icon andPayloadObjectId:[textPayload uniqueObjectId]];
       PayloadItemList* newPil = [pil addItem:pi];
-      PMKPromise*      newPl  = [Payload payloadWithObject:newPil];
+      PMKPromise*      newPl  = [[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
       
       return (id)newPl;
     })
@@ -414,7 +414,7 @@
     .then(^(NSMutableArray* promisedParentPath)
     { parentPath = promisedParentPath;
       
-      return [Payload payloadWithObject:[PayloadItemList new]];
+      return [[CryptoService sharedInstance] encryptObject:[PayloadItemList new] forCommit:self];
     })
     .then(^(Payload* itemListPayload)
     { [self addPayloadsObject:itemListPayload];
@@ -431,7 +431,7 @@
       
       PayloadItem*     pi     = [[PayloadItem alloc] initWithTitle:title andSubtitle:subtitle andIcon:icon andPayloadObjectId:[itemListPayload uniqueObjectId]];
       PayloadItemList* newPil = [pil addItem:pi];
-      PMKPromise*      newPl  = [Payload payloadWithObject:newPil];
+      PMKPromise*      newPl  = [[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
       
       return (id)newPl;
     })
@@ -469,7 +469,7 @@
       PayloadItem*     pi     = [pil objectAtIndex:position];
       PayloadItem*     newPi  = [pi updateTitle:title andSubtitle:subtitle andIcon:icon];
       PayloadItemList* newPil = [pil updateItem:newPi at:position];
-      PMKPromise*      newPl  = [Payload payloadWithObject:newPil];
+      PMKPromise*      newPl  = [[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
       
       return (id)newPl;
     })
@@ -493,7 +493,7 @@
   .then(^(NSMutableArray* promisedParentPath)
   { parentPath = promisedParentPath;
     
-    return [Payload payloadWithObject:obj];
+    return [[CryptoService sharedInstance] encryptObject:obj forCommit:self];
   })
   .then(^(Payload* itemListPayload)
   { [self addPayloadsObject:itemListPayload];
@@ -511,7 +511,7 @@
     PayloadItem*     pi     = [pil objectAtIndex:position];
     PayloadItem*     newPi  = [pi updatePayloadObjectId:[itemListPayload uniqueObjectId]];
     PayloadItemList* newPil = [pil updateItem:newPi at:position];
-    PMKPromise*      newPl  = [Payload payloadWithObject:newPil];
+    PMKPromise*      newPl  = [[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
     
     return (id)newPl;
   })
@@ -536,7 +536,7 @@
   .then(^(NSMutableArray* promisedParentPath)
   { parentPath = promisedParentPath;
     
-    return [Payload payloadWithObject:[PayloadItemList new]];
+    return [[CryptoService sharedInstance] encryptObject:[PayloadItemList new] forCommit:self];
   })
   .then(^(Payload* itemListPayload)
   { [self addPayloadsObject:itemListPayload];
@@ -554,7 +554,7 @@
     PayloadItem*     pi     = [pil objectAtIndex:position];
     PayloadItem*     newPi  = [pi updatePayloadObjectId:[itemListPayload uniqueObjectId]];
     PayloadItemList* newPil = [pil updateItem:newPi at:position];
-    PMKPromise*      newPl  = [Payload payloadWithObject:newPil];
+    PMKPromise*      newPl  = [[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
     
     return (id)newPl;
   })
@@ -591,7 +591,7 @@
         return (id) _TRESORERROR(TresorErrorPayloadIsNotDecrypted);
       
       PayloadItemList* newPil = [pil deleteItemAtPosition:position];
-      PMKPromise*      newPl  = [Payload payloadWithObject:newPil];
+      PMKPromise*      newPl  = [[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
       
       return (id)newPl;
     })
