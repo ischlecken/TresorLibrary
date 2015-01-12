@@ -93,7 +93,7 @@
 { Commit* result = self.nextCommit;
   
   if( result==nil )
-  { result = [Commit commitObjectUsingParentCommit:self.commit andError:error];
+  { result = [Commit commitObjectUsingParentCommit:self.commit forVault:self andError:error];
     
     if( result )
       self.nextcommitoid = [result uniqueObjectId];

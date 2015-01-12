@@ -58,8 +58,7 @@ typedef PayloadItemList* (^UpdateParentPathHandler)(PayloadItemList* pl);
 
 -(PMKPromise*)      payloadObject;
 
-+(Commit*)          commitObjectWithMessage:(NSString*)message andError:(NSError**)error;
-+(Commit*)          commitObjectUsingParentCommit:(Commit*)parentCommit andError:(NSError**)error;
++(Commit*)          commitObjectUsingParentCommit:(Commit*)parentCommit forVault:(Vault*)vault andError:(NSError**)error;
 
 @end
 

@@ -138,7 +138,7 @@
  *
  */
 -(NSString*) description
-{ return [NSString stringWithFormat:@"Commit[createts:%@ message:'%@' parentcommitoid:%@ payloadoid:%@]",self.createts,self.message,self.parentcommitoid,self.payloadoid]; }
+{ return [NSString stringWithFormat:@"Commit[createts:%@ message:'%@' parentcommitoid:%@ payloadoid:%@ vault:%@]",self.createts,self.message,self.parentcommitoid,self.payloadoid,self.vault]; }
 
 /**
  *
@@ -152,11 +152,9 @@
     fulfiller(self);
   }]
   .then(^(Commit* cm)
-  { return [cm payloadObject];
-  })
+  { return [cm payloadObject]; })
   .then(^(Payload* payload)
-  {
-    return [payload acceptVisitor:visitor];
+  { return [payload acceptVisitor:visitor];
   })
   .then(^()
   { if( [visitor respondsToSelector:@selector(visitCommit:andState:)] )
@@ -605,29 +603,17 @@
   return result;
 }
 
-
 /**
  *
  */
-+(Commit*) commitObjectWithMessage:(NSString*)message andError:(NSError**)error
-{ Commit* result = [NSEntityDescription insertNewObjectForEntityForName:@"Commit" inManagedObjectContext:_MOC];
-  
-  result.message  = message;
-  result.createts = [NSDate date];
-  
-  _MOC_SAVERETURN;
-}
-
-/**
- *
- */
-+(Commit*) commitObjectUsingParentCommit:(Commit*)parentCommit andError:(NSError**)error
++(Commit*) commitObjectUsingParentCommit:(Commit*)parentCommit forVault:(Vault*)vault andError:(NSError**)error
 { Commit* result = [NSEntityDescription insertNewObjectForEntityForName:@"Commit" inManagedObjectContext:_MOC];
   
   result.message         = @"pending";
   result.createts        = [NSDate date];
   result.payloadoid      = [parentCommit payloadoid];
   result.parentcommitoid = [parentCommit uniqueObjectId];
+  result.vault           = vault;
   
   if( parentCommit )
     [result addPayloads:parentCommit.payloads];
