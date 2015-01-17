@@ -46,6 +46,7 @@ enum
   
   TresorErrorCouldNotFindPINMasterKey   = -33,
   TresorErrorKeyForPayloadNotSet        = -34,
+  TresorErrorCommitPayloadoidNotSet     = -35,
 };
 
 #define _TRESORERROR(errCode) [[NSError alloc] initWithDomain:kTresorErrorDomain code:errCode userInfo:nil]

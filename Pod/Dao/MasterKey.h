@@ -24,6 +24,7 @@
 #define kMasterKeyPUKAuthentication @"puk"
 
 @class Vault;
+@class VaultParameter;
 
 @interface MasterKey : NSManagedObject
 @property (nonatomic, retain) NSDate*   createts;
@@ -39,7 +40,7 @@
 @property (nonatomic, retain) NSNumber* kdfiterations;
 @property (nonatomic, retain) Vault*    vault;
 
-+(PMKPromise*) masterKeyWithPin:(NSString*)pin andPUK:(NSString*)puk;
++(PMKPromise*) masterKeyWithVaultParameter:(VaultParameter*)parameter;
 -(PMKPromise*) decryptedMasterKeyUsingPIN:(NSString*)pin;
 
 @end

@@ -91,43 +91,33 @@
 /**
  *
  */
--(PMKPromise*) loadPayloadObject
+-(PMKPromise*) payloadObject
 { PMKPromise* promise = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
    { NSError* error = nil;
-     id       obj   = [_MOC loadObjectWithObjectID:self.payloadoid andError:&error];
+     id       obj   = nil;
+     
+     if( self.payloadoid==nil )
+     { error = _TRESORERROR(TresorErrorCommitPayloadoidNotSet);
+       
+       goto cleanup;
+     } /* of if */
+     
+     obj = [_MOC loadObjectWithObjectID:self.payloadoid andError:&error];
      
      if( obj && ![obj isKindOfClass:[Payload class]] )
-       rejecter(_TRESORERROR(TresorErrorUnexpectedObjectClass));
-     else if( obj==nil )
-       rejecter(error);
+     { obj   = nil;
+       error = _TRESORERROR(TresorErrorUnexpectedObjectClass);
+       
+       goto cleanup;
+     } /* of if */
      
-     fulfiller(obj);
+   cleanup:
+     
+     if( obj )
+       fulfiller(obj);
+     else
+       rejecter(error);
    }];
-  
-  return promise;
-}
-
-/**
- *
- */
--(PMKPromise*) createPayloadObject
-{ PMKPromise* promise = [[CryptoService sharedInstance] encryptObject:[PayloadItemList new] forCommit:self]
-  .then(^(Payload* payload)
-  { self.payloadoid = [payload uniqueObjectId];
-    
-    [self addPayloadsObject:payload];
-    
-    return payload;
-  });
-  
-  return promise;
-}
-
-/**
- *
- */
--(PMKPromise*) payloadObject
-{ PMKPromise* promise = self.payloadoid==nil ? [self createPayloadObject] : [self loadPayloadObject];
   
   return promise;
 }
@@ -284,7 +274,7 @@
  
  */
 -(PMKPromise*) updateParentPathWithNewPayload:(Payload*)newPl inParentPath:(NSMutableArray*)parentPath
-{ PMKPromise* result = [self loadPayloadObject];
+{ PMKPromise* result = [self payloadObject];
   
   result = result.then(^(Payload* payload)
   { [self removePayloadsObject:payload];
@@ -606,8 +596,35 @@
 /**
  *
  */
++(PMKPromise*) createInitialCommitForVault:(Vault*)vault andMasterCryptoKey:(NSData*)decryptedMasterKey
+{ Commit* commit = [NSEntityDescription insertNewObjectForEntityForName:@"Commit" inManagedObjectContext:_MOC];
+  
+  commit.message         = @"Initial Commit";
+  commit.createts        = [NSDate date];
+  commit.parentcommitoid = nil;
+  commit.vault           = vault;
+  
+  PMKPromise* result = [Payload payloadWithObject:[PayloadItemList new] inCommit:commit usingDecryptedMasterKey:decryptedMasterKey]
+  .then(^(Payload* payload)
+  { commit.payloadoid      = [payload uniqueObjectId];
+    
+    [commit addPayloadsObject:payload];
+    
+    return commit;
+  });
+
+  return result;
+}
+
+
+/**
+ *
+ */
 +(Commit*) commitObjectUsingParentCommit:(Commit*)parentCommit forVault:(Vault*)vault andError:(NSError**)error
-{ Commit* result = [NSEntityDescription insertNewObjectForEntityForName:@"Commit" inManagedObjectContext:_MOC];
+{ if( parentCommit==nil )
+    @throw [NSException exceptionWithName:@"ParentCommitNotSetException" reason:nil userInfo:nil];
+  
+  Commit* result = [NSEntityDescription insertNewObjectForEntityForName:@"Commit" inManagedObjectContext:_MOC];
   
   result.message         = @"pending";
   result.createts        = [NSDate date];
@@ -615,8 +632,7 @@
   result.parentcommitoid = [parentCommit uniqueObjectId];
   result.vault           = vault;
   
-  if( parentCommit )
-    [result addPayloads:parentCommit.payloads];
+  [result addPayloads:parentCommit.payloads];
   
   _MOC_SAVERETURN;
 }

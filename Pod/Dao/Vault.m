@@ -256,24 +256,36 @@
  */
 +(PMKPromise*) vaultObjectWithParameter:(VaultParameter*)parameter
 { PMKPromise* result = nil;
+  Vault*      vault  = [NSEntityDescription insertNewObjectForEntityForName:@"Vault" inManagedObjectContext:_MOC];
+  
+  vault.createts  = [NSDate date];
+  vault.vaultname = parameter.name;
+  vault.vaulttype = parameter.type;
+  
+  if( parameter.icon )
+    vault.vaulticon = UIImagePNGRepresentation(parameter.icon);
   
   if( parameter && parameter.pin && parameter.puk )
-  { result = [MasterKey masterKeyWithPin:parameter.pin andPUK:parameter.puk]
+  { result = [MasterKey masterKeyWithVaultParameter:parameter]
     .then(^(MasterKey* pin,MasterKey* puk)
-    { NSError* error  = nil;
-      Vault*   result = [NSEntityDescription insertNewObjectForEntityForName:@"Vault" inManagedObjectContext:_MOC];
+    { pin.vault = vault;
+      puk.vault = vault;
       
-      result.createts  = [NSDate date];
-      result.vaultname = parameter.name;
-      result.vaulttype = parameter.type;
+      return [Commit createInitialCommitForVault:vault andMasterCryptoKey:parameter.masterCryptoKey];
+    })
+    .then(^(Commit* commit)
+    { NSError* error = nil;
       
-      if( parameter.icon )
-        result.vaulticon = UIImagePNGRepresentation(parameter.icon);
+      parameter.masterCryptoKey = nil;
+    
+      return [_MOC save:&error] ? (id)vault : (id)error;
+    })
+    .catch(^(NSError* error)
+    { _NSLOG(@"catch error:%@",error);
+    
+      [_MOC rollback];
       
-      pin.vault = result;
-      puk.vault = result;
-      
-      return [_MOC save:&error] ? (id) result : (id) error;
+      return error;
     });
   } /* of if */
   

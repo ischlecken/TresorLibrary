@@ -33,6 +33,8 @@
 @property(strong,nonatomic) NSString*  kdfAlgorithm;
 @property(assign,nonatomic) NSUInteger kdfIterations;
 @property(strong,nonatomic) NSData*    kdfSalt;
+
+@property(strong,nonatomic) NSData*    masterCryptoKey;
 @end
 
 

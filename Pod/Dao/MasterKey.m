@@ -66,7 +66,7 @@
 /**
  *
  */
-+(PMKPromise*) masterKeyWithPin:(NSString*)pin andPUK:(NSString*)puk
++(PMKPromise*) masterKeyWithVaultParameter:(VaultParameter*)parameter
 { PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
   {
     dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
@@ -77,8 +77,8 @@
       
       { TresorAlgorithmInfo*  encryptAlgo  = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
         TresorAlgorithmInfo*  deriveAlgo   = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmPBKDF2CC];
-        NSData*               pinData      = [pin hexString2RawValue];
-        NSData*               pukData      = [puk hexString2RawValue];
+        NSData*               pinData      = [parameter.pin hexString2RawValue];
+        NSData*               pukData      = [parameter.puk hexString2RawValue];
         NSUInteger            keySize      = encryptAlgo.keySize;
         NSUInteger            iterations   = 2000000;
         
@@ -118,6 +118,8 @@
         
         if( masterCryptoKey1==nil )
           goto cleanup;
+        
+        parameter.masterCryptoKey = masterCryptoKey1;
         
         _NSLOG(@"masterCryptoKey1:%@",[masterCryptoKey1 hexStringValue]);
         
