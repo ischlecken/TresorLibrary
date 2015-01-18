@@ -70,12 +70,12 @@
 { PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
   {
     dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
-    { _NSLOG(@"masterKeyWithPin.start");
+    { _NSLOG(@"start");
 
       NSError*                   error = nil;
       CreateMasterKeysParameter* cmkp  = nil;
       
-      { TresorAlgorithmInfo*  encryptAlgo  = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
+      { TresorAlgorithmInfo*  encryptAlgo  = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256CC];
         TresorAlgorithmInfo*  deriveAlgo   = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmPBKDF2CC];
         NSData*               pinData      = [parameter.pin hexString2RawValue];
         NSData*               pukData      = [parameter.puk hexString2RawValue];
@@ -188,7 +188,7 @@ cleanup:
       else
         rejecter(error);
       
-      _NSLOG(@"masterKeyWithPin.stop");
+      _NSLOG(@"stop");
     });
   }]
   .then(^(CreateMasterKeysParameter* cmkp)
@@ -224,7 +224,7 @@ cleanup:
 -(PMKPromise*) decryptedMasterKeyUsingPIN:(NSString*)pin
 { PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
   { dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
-    { _NSLOG(@"decryptedMasterKeyUsingPIN.start");
+    { _NSLOG(@"start");
       
       NSError* error              = nil;
       NSData*  decryptedMasterKey = nil;
@@ -261,14 +261,14 @@ cleanup:
       
     cleanup:
       if( decryptedMasterKey )
-      { _NSLOG(@"decryptedMasterKey:%@",[decryptedMasterKey hexStringValue]);
+      { //_NSLOG(@"decryptedMasterKey:%@",[decryptedMasterKey hexStringValue]);
         
         fulfill(decryptedMasterKey);
       } /* of if */
       else
         reject(error);
       
-      _NSLOG(@"decryptedMasterKeyUsingPIN.stop");
+      _NSLOG(@"stop");
     });
   }];
   

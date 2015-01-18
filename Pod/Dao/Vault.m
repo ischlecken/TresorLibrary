@@ -176,7 +176,7 @@
   NSArray* deletedEntities = [_MOC executeFetchRequest:fetchRequest error:&error];
   
   for( Payload* p in deletedEntities )
-  { _NSLOG(@"%@ commits:%ld",[p uniqueObjectId],(long)p.commits.count);
+  { //_NSLOG(@"%@ commits:%ld",[p uniqueObjectId],(long)p.commits.count);
     
     if( p.commits.count==0 )
     { _NSLOG(@"delete %@",[p uniqueObjectId]);

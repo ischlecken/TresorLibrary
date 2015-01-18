@@ -138,6 +138,10 @@ cleanUp:
   int         internalErrCode = 0;
   BufferT*    cryptResult     = NULL;
   
+  _NSLOG(@"cryptoName   :%@",algorithm.name);
+  _NSLOG(@"cryptoIV     :%@",[iv hexStringValue]);
+  _NSLOG(@"decryptedData:%@",[self hexStringValue]);
+  
   TRESOR_CHECKERROR( key==nil || iv==nil || [key length]==0 || [iv length]==0,TresorErrorIllegalArgument,@"key and iv should not be nil",0 );
   
   BOOL     useCommonCrypto = FALSE;
@@ -191,6 +195,8 @@ cleanUp:
 cleanUp:
   free(cryptResult);
   
+  _NSLOG(@"encryptedData:%@",[result hexStringValue]);
+  
   return result;  
 } /* of encryptWithAlgorithm: */
 
@@ -201,6 +207,10 @@ cleanUp:
 { NSData*     result          = nil;
   BufferT*    decryptResult   = NULL;
   int         internalErrCode = 0;
+  
+  _NSLOG(@"cryptoName   :%@",algorithm.name);
+  _NSLOG(@"cryptoIV     :%@",[iv hexStringValue]);
+  _NSLOG(@"encryptedData:%@",[self hexStringValue]);
   
   TRESOR_CHECKERROR( key==nil || iv==nil || [key length]==0 || [iv length]==0,TresorErrorIllegalArgument,@"key and iv should not be nil",0 );
   
@@ -256,6 +266,8 @@ cleanUp:
   
 cleanUp:  
   free(decryptResult);
+  
+  _NSLOG(@"decryptedData:%@",[result hexStringValue]);
   
   return result;  
 } /* of decryptWithAlgorithm: */

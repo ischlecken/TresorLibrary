@@ -21,6 +21,7 @@
 #import "MasterKey.h"
 #import "TresorAlgorithmInfo.h"
 #import "NSString+Crypto.h"
+#import "Macros.h"
 
 @implementation Key
 
@@ -46,7 +47,8 @@
  *
  */
 -(NSData*) decryptKeyUsingDecryptedMasterKey:(NSData*)decryptedMasterKey andError:(NSError**)error
-{ NSData* result = [self.encryptedkey decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
+{
+  NSData* result = [self.encryptedkey decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
                                                   usingKey:decryptedMasterKey
                                                      andIV:[self.cryptoiv hexString2RawValue]
                                                      error:error];

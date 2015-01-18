@@ -184,21 +184,25 @@
       } /* of if */
       
       dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
-      { _NSLOG(@"decryptPayloadWithDecryptedMasterKey.start");
+      { _NSLOG(@"start");
 
         NSError* error            = nil;
         NSData*  decryptedPayload = nil;
         
-        { NSData* decryptedKey = [self.key decryptKeyUsingDecryptedMasterKey:decryptedMasterKey andError:&error];
+        { _NSLOG(@"decryptPayloadKey");
+          
+          NSData* decryptedKey = [self.key decryptKeyUsingDecryptedMasterKey:decryptedMasterKey andError:&error];
         
           if( decryptedKey==nil )
             goto  cleanup1;
+          
+          _NSLOG(@"decryptPayload");
           
           decryptedPayload = [self.encryptedpayload decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
                                                                 usingKey:decryptedKey
                                                                    andIV:[self.cryptoiv hexString2RawValue]
                                                                    error:&error];
-          
+
           if( decryptedPayload==nil )
             goto cleanup1;
           
@@ -211,7 +215,7 @@
         else
           reject(error);
         
-        _NSLOG(@"decryptPayloadWithDecryptedMasterKey.stop");
+        _NSLOG(@"stop");
       });
     }
     
@@ -235,24 +239,28 @@
     result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
     {
       dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
-      { _NSLOG(@"payloadWithObject.start");
+      { _NSLOG(@"start");
         
         NSError*                error            = nil;
         NSData*                 encryptedKey     = nil;
         NSData*                 encryptedPayload = nil;
-        TresorAlgorithmInfo*    vai              = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256];
+        TresorAlgorithmInfo*    vai              = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256CC];
         CreatePayloadParameter* cpp              = nil;
         
         { NSData* decryptedKey    = [NSData dataWithRandom:vai.keySize];
           NSData* keyCryptoIV     = [NSData dataWithRandom:vai.blockSize];
           NSData* payloadCryptoIV = [NSData dataWithRandom:vai.blockSize];
+        
+          _NSLOG(@"createPayloadKey");
           
           encryptedKey = [decryptedKey encryptWithAlgorithm:vai
-                                                   usingKey:decryptedKey
+                                                   usingKey:decryptedMasterKey
                                                       andIV:keyCryptoIV
                                                       error:&error];
           if( encryptedKey==nil )
             goto cleanup;
+          
+          _NSLOG(@"encryptPayload");
           
           encryptedPayload = [NSData encryptPayload:object
                                      usingAlgorithm:vai
@@ -280,7 +288,7 @@
         else
           rejecter(error);
         
-        _NSLOG(@"payloadWithObject.stop");
+        _NSLOG(@"stop");
       });
     }]
     .then(^(CreatePayloadParameter* cpp)
