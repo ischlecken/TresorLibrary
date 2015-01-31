@@ -24,7 +24,7 @@ NSArray* gTresorAlgorithmInfos = nil;
  *
  */
 +(void) initialize
-{ NSLog(@"initialize TresorAlgorithmInfo");
+{ //NSLog(@"initialize TresorAlgorithmInfo");
  
   if( self==[TresorAlgorithmInfo class] )
   {

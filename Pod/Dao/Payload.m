@@ -189,22 +189,24 @@
         NSError* error            = nil;
         NSData*  decryptedPayload = nil;
         
-        { _NSLOG(@"decryptPayloadKey");
-          
+        {
           NSData* decryptedKey = [self.key decryptKeyUsingDecryptedMasterKey:decryptedMasterKey andError:&error];
         
           if( decryptedKey==nil )
             goto  cleanup1;
           
-          _NSLOG(@"decryptPayload");
+          _NSLOG(@"decryptedPayloadKey:%@",[decryptedKey shortHexStringValue]);
           
-          decryptedPayload = [self.encryptedpayload decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
-                                                                usingKey:decryptedKey
-                                                                   andIV:[self.cryptoiv hexString2RawValue]
-                                                                   error:&error];
+          
+          decryptedPayload = [self.encryptedpayload decryptPayloadUsingAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
+                                                                 andDecryptedKey:decryptedKey
+                                                                     andCryptoIV:[self.cryptoiv hexString2RawValue]
+                                                                        andError:&error];
 
           if( decryptedPayload==nil )
             goto cleanup1;
+          
+          _NSLOG(@"decryptedPayload   :{%@} %@",[decryptedPayload class],decryptedPayload);
           
           [[DecryptedObjectCache sharedInstance] setDecryptedObject:decryptedPayload forUniqueId:[self uniqueObjectId]];
         }
@@ -239,7 +241,7 @@
     result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
     {
       dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
-      { _NSLOG(@"start");
+      { _NSLOG(@"begin");
         
         NSError*                error            = nil;
         NSData*                 encryptedKey     = nil;
@@ -288,7 +290,7 @@
         else
           rejecter(error);
         
-        _NSLOG(@"stop");
+        _NSLOG(@"end");
       });
     }]
     .then(^(CreatePayloadParameter* cpp)

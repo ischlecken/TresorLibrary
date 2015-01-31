@@ -139,8 +139,9 @@ cleanUp:
   BufferT*    cryptResult     = NULL;
   
   _NSLOG(@"cryptoName   :%@",algorithm.name);
-  _NSLOG(@"cryptoIV     :%@",[iv hexStringValue]);
-  _NSLOG(@"decryptedData:%@",[self hexStringValue]);
+  _NSLOG(@"cryptoIV     :%@",[iv shortHexStringValue]);
+  _NSLOG(@"key          :%@",[key shortHexStringValue]);
+  _NSLOG(@"decryptedData:%@",[self shortHexStringValue]);
   
   TRESOR_CHECKERROR( key==nil || iv==nil || [key length]==0 || [iv length]==0,TresorErrorIllegalArgument,@"key and iv should not be nil",0 );
   
@@ -195,7 +196,7 @@ cleanUp:
 cleanUp:
   free(cryptResult);
   
-  _NSLOG(@"encryptedData:%@",[result hexStringValue]);
+  _NSLOG(@"encryptedData:%@",[result shortHexStringValue]);
   
   return result;  
 } /* of encryptWithAlgorithm: */
@@ -203,14 +204,15 @@ cleanUp:
 /**
  *
  */
-- (NSData*) decryptWithAlgorithm:(TresorAlgorithmInfo*) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
+-(NSData*) decryptWithAlgorithm:(TresorAlgorithmInfo*) algorithm usingKey:(NSData*)key andIV:(NSData*)iv error:(NSError **)outError
 { NSData*     result          = nil;
   BufferT*    decryptResult   = NULL;
   int         internalErrCode = 0;
   
   _NSLOG(@"cryptoName   :%@",algorithm.name);
-  _NSLOG(@"cryptoIV     :%@",[iv hexStringValue]);
-  _NSLOG(@"encryptedData:%@",[self hexStringValue]);
+  _NSLOG(@"cryptoIV     :%@",[iv shortHexStringValue]);
+  _NSLOG(@"key          :%@",[key shortHexStringValue]);
+  _NSLOG(@"encryptedData:%@",[self shortHexStringValue]);
   
   TRESOR_CHECKERROR( key==nil || iv==nil || [key length]==0 || [iv length]==0,TresorErrorIllegalArgument,@"key and iv should not be nil",0 );
   
@@ -267,7 +269,7 @@ cleanUp:
 cleanUp:  
   free(decryptResult);
   
-  _NSLOG(@"decryptedData:%@",[result hexStringValue]);
+  _NSLOG(@"decryptedData:%@",[result shortHexStringValue]);
   
   return result;  
 } /* of decryptWithAlgorithm: */
@@ -453,6 +455,19 @@ cleanUp:
 /**
  *
  */
+-(NSString*) shortHexStringValue
+{ NSString* result = [self hexStringValue];
+  
+  if( [result length]>20 )
+    result = [NSString stringWithFormat:@"%@ {%ld}",[result substringToIndex:20],(long)result.length];
+  
+  return result;
+}
+
+
+/**
+ *
+ */
 +(PMKPromise*) generatePINWithLength:(NSUInteger)pinLength
 { _NSLOG_SELECTOR;
   
@@ -502,8 +517,10 @@ cleanUp:
 /**
  *
  */
-+(id) decryptPayload:(NSData*)payload usingAlgorithm:(TresorAlgorithmInfo*)algorithm andDecryptedKey:(NSData*)decryptedKey andCryptoIV:(NSData*)cryptoIV andError:(NSError**)error
+-(id) decryptPayloadUsingAlgorithm:(TresorAlgorithmInfo*)algorithm andDecryptedKey:(NSData*)decryptedKey andCryptoIV:(NSData*)cryptoIV andError:(NSError**)error
 { id result = nil;
+  
+  NSData* payload = self;
   
   if( algorithm )
   { NSData* decryptedPayload  = [payload decryptWithAlgorithm:algorithm usingKey:decryptedKey andIV:cryptoIV error:error];
@@ -549,7 +566,7 @@ cleanUp:
         tagData  = rawData;
         rawData += tagSize;
 
-        NSLog(@"tag[%d,%d]",(unsigned int)tag,(unsigned int)tagSize);
+        _NSLOG(@"tag[%d,%d]",(unsigned int)tag,(unsigned int)tagSize);
         
         switch( tag )
         { case CryptoTagPayloadClassName:
@@ -659,13 +676,13 @@ cleanup:
       goto cleanup;
     } /* of if */
     
-    NSLog(@"payload[%@]:%@",payloadObjectClass,[payloadObjectData hexStringValue]);
+    _NSLOG(@"payload          : %@ %@",[payloadObjectData shortHexStringValue],payloadObjectClass);
     
     NSData* randomPadding     = [NSData dataWithRandom:127];
-    NSLog(@"randomPadding[%@]",[randomPadding hexStringValue]);
+    _NSLOG(@"randomPadding    :%@",[randomPadding shortHexStringValue]);
     
     NSData* randomPaddingHash = [randomPadding hashWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmSHA256CC] error:error];
-    NSLog(@"randomPaddingHash[%@]",[randomPaddingHash hexStringValue]);
+    _NSLOG(@"randomPaddingHash:%@",[randomPaddingHash shortHexStringValue]);
     
     if( randomPaddingHash )
     { [NSData addTag:CryptoTagPayloadClassName  andClass:payloadObjectClass toResult:rw];
@@ -674,12 +691,13 @@ cleanup:
       [NSData addTag:CryptoTagRandomPadding     andData:randomPadding       toResult:rw];
       
       rawPayload = [rw mirror];
-      NSLog(@"rawPayload[%@]",[rawPayload hexStringValue]);
       
       if( rawPayload )
-      { result = [rawPayload encryptWithAlgorithm:algorithm usingKey:decryptedKey andIV:cryptoIV error:error];
-      
-        NSLog(@"result[%@]",[result hexStringValue]);
+      { _NSLOG(@"rawPayload       :%@",[rawPayload shortHexStringValue]);
+        
+        result = [rawPayload encryptWithAlgorithm:algorithm usingKey:decryptedKey andIV:cryptoIV error:error];
+        
+        _NSLOG(@"encryptedPaylaod :%@",[result shortHexStringValue]);
       } /* of if */
     } /* of if */
   } /* of if */

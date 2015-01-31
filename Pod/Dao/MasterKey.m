@@ -105,7 +105,7 @@
           goto cleanup;
         
         NSData* masterCryptoKey0   = [NSData dataWithRandom:keySize];
-        _NSLOG(@"masterCryptoKey0:%@",[masterCryptoKey0 hexStringValue]);
+        _NSLOG(@"masterCryptoKey0:%@",[masterCryptoKey0 shortHexStringValue]);
         
         /**
          * this is the master key that is used for the encryption of all other keys
@@ -121,7 +121,7 @@
         
         parameter.masterCryptoKey = masterCryptoKey1;
         
-        _NSLOG(@"masterCryptoKey1:%@",[masterCryptoKey1 hexStringValue]);
+        _NSLOG(@"masterCryptoKey1:%@",[masterCryptoKey1 shortHexStringValue]);
         
         NSData* pinMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
         NSData* pinMasterEncryptedKey = [NSData encryptPayload:masterCryptoKey1
@@ -133,7 +133,7 @@
         if( pinMasterEncryptedKey==nil )
           goto cleanup;
 
-        _NSLOG(@"pinMasterEncryptedKey:%@",[pinMasterEncryptedKey hexStringValue]);
+        _NSLOG(@"pinMasterEncryptedKey:%@",[pinMasterEncryptedKey shortHexStringValue]);
 
         NSData* pukMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
         NSData* pukMasterEncryptedKey = [NSData encryptPayload:masterCryptoKey1
@@ -145,7 +145,7 @@
         if( pukMasterEncryptedKey==nil )
           goto cleanup;
         
-        _NSLOG(@"pukMasterEncryptedKey:%@",[pukMasterEncryptedKey hexStringValue]);
+        _NSLOG(@"pukMasterEncryptedKey:%@",[pukMasterEncryptedKey shortHexStringValue]);
 
         NSString* keyChainID4EncryptedPinMasterKey = [NSString stringUniqueID];
         NSString* keyChainID4EncryptedPUKMasterKey = [NSString stringUniqueID];
@@ -252,16 +252,15 @@ cleanup:
         
         NSData* encryptedKey = [encryptedKeyString hexString2RawValue];
         
-        decryptedMasterKey = [NSData decryptPayload:encryptedKey
-                                     usingAlgorithm:encryptAlgo
-                                    andDecryptedKey:pinDerivedKey
-                                        andCryptoIV:[self.cryptoiv hexString2RawValue]
-                                           andError:&error];
+        decryptedMasterKey = [encryptedKey decryptPayloadUsingAlgorithm:encryptAlgo
+                                                        andDecryptedKey:pinDerivedKey
+                                                            andCryptoIV:[self.cryptoiv hexString2RawValue]
+                                                               andError:&error];
       }
       
     cleanup:
       if( decryptedMasterKey )
-      { //_NSLOG(@"decryptedMasterKey:%@",[decryptedMasterKey hexStringValue]);
+      { //_NSLOG(@"decryptedMasterKey:%@",[decryptedMasterKey shortHexStringValue]);
         
         fulfill(decryptedMasterKey);
       } /* of if */

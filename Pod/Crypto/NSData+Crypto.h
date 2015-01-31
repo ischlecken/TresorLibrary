@@ -37,6 +37,7 @@
 -(instancetype) initWithRandom:(NSUInteger)length;
 
 -(NSString*)    hexStringValue;
+-(NSString*)    shortHexStringValue;
 
 +(NSData*)      dataWithHexString:(const char*)hexString;
 +(NSData*)      dataWithUTF8String:(NSString*)string;
@@ -44,11 +45,10 @@
 
 +(PMKPromise*)  generatePINWithLength:(NSUInteger)pinLength;
 
-+(id)           decryptPayload:(NSData*)payload
-                usingAlgorithm:(TresorAlgorithmInfo*)algorithm
-               andDecryptedKey:(NSData*)decryptedKey
-                   andCryptoIV:(NSData*)cryptoIV
-                      andError:(NSError**)error;
+-(id)           decryptPayloadUsingAlgorithm:(TresorAlgorithmInfo*)algorithm
+                             andDecryptedKey:(NSData*)decryptedKey
+                                 andCryptoIV:(NSData*)cryptoIV
+                                    andError:(NSError**)error;
 
 +(NSData*)      encryptPayload:(id)payloadObject
                 usingAlgorithm:(TresorAlgorithmInfo*)algorithm
