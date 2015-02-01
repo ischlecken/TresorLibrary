@@ -17,6 +17,7 @@
  */
 #import "Macros.h"
 #import "DecryptedObjectCache.h"
+#import "Vault.h"
 
 @interface DecryptedObjectCache ()
 @property NSMutableDictionary* cache;
@@ -40,11 +41,20 @@
 /**
  * TODO: purge decoded objects
  */
--(void) flush
+-(void) flushAll
 { _NSLOG_SELECTOR;
   
   self.cache = [[NSMutableDictionary alloc] initWithCapacity:256];
 }
+
+
+/**
+ *
+ */
+-(void) flushForVault:(Vault *)vault
+{ [self flushAll];
+}
+
 
 /**
  *

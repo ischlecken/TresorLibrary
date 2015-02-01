@@ -528,7 +528,8 @@ cleanUp:
     if( decryptedPayload )
     { decryptedPayload = [decryptedPayload mirror];
       
-      const void* rawData           = [decryptedPayload bytes];
+      const void* rawDataBegin      = [decryptedPayload bytes];
+      const void* rawData           = rawDataBegin;
       NSUInteger  rawDataSize       = [decryptedPayload length];
       const void* rawDataEnd        = rawData+rawDataSize;
       NSString*   payloadClassName  = nil;
@@ -567,6 +568,9 @@ cleanUp:
         rawData += tagSize;
 
         _NSLOG(@"tag[%d,%d]",(unsigned int)tag,(unsigned int)tagSize);
+        
+        if( rawData<rawDataBegin || rawDataEnd<rawData )
+          break;
         
         switch( tag )
         { case CryptoTagPayloadClassName:

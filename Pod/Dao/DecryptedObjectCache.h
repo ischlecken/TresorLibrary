@@ -16,9 +16,12 @@
  * Copyright (c) 2014 ischlecken.
  */
 
+@class Vault;
+
 @interface DecryptedObjectCache : NSObject
 
--(void)                  flush;
+-(void)                  flushAll;
+-(void)                  flushForVault:(Vault*)vault;
 
 -(id)                    decryptedObjectForUniqueId:(NSString*)uniqueId;
 -(void)                  setDecryptedObject:(id)object forUniqueId:(NSString*)uniqueId;
