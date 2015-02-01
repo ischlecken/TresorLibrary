@@ -31,7 +31,7 @@
 { self = [super init];
   
   if( self )
-  { self.cache      = [[NSMutableDictionary alloc] initWithCapacity:256];
+  { self.cache = [[NSMutableDictionary alloc] initWithCapacity:256];
   } /* of if */
   
   return self;
@@ -43,7 +43,7 @@
 -(void) flush
 { _NSLOG_SELECTOR;
   
-  self.cache      = [[NSMutableDictionary alloc] initWithCapacity:256];
+  self.cache = [[NSMutableDictionary alloc] initWithCapacity:256];
 }
 
 /**

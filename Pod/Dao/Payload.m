@@ -190,13 +190,15 @@
         NSData*  decryptedPayload = nil;
         
         {
-          NSData* decryptedKey = [self.key decryptKeyUsingDecryptedMasterKey:decryptedMasterKey andError:&error];
-        
+          NSData* decryptedKey = [self.key.encryptedkey decryptPayloadUsingAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.key.cryptoalgorithm]
+                                                                     andDecryptedKey:decryptedMasterKey
+                                                                         andCryptoIV:[self.key.cryptoiv hexString2RawValue]
+                                                                            andError:&error];
+          
           if( decryptedKey==nil )
             goto  cleanup1;
           
           _NSLOG(@"decryptedPayloadKey:%@",[decryptedKey shortHexStringValue]);
-          
           
           decryptedPayload = [self.encryptedpayload decryptPayloadUsingAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
                                                                  andDecryptedKey:decryptedKey
@@ -255,10 +257,12 @@
         
           _NSLOG(@"createPayloadKey");
           
-          encryptedKey = [decryptedKey encryptWithAlgorithm:vai
-                                                   usingKey:decryptedMasterKey
-                                                      andIV:keyCryptoIV
-                                                      error:&error];
+          encryptedKey = [NSData encryptPayload:decryptedKey
+                                 usingAlgorithm:vai
+                                andDecryptedKey:decryptedMasterKey
+                                    andCryptoIV:keyCryptoIV
+                                       andError:&error];
+          
           if( encryptedKey==nil )
             goto cleanup;
           

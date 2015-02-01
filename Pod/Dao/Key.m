@@ -38,20 +38,7 @@
  *
  */
 -(NSString*) description
-{ NSString* result = [NSString stringWithFormat:@"Key[]"];
-  
-  return result;
-}
-
-/**
- *
- */
--(NSData*) decryptKeyUsingDecryptedMasterKey:(NSData*)decryptedMasterKey andError:(NSError**)error
-{
-  NSData* result = [self.encryptedkey decryptWithAlgorithm:[TresorAlgorithmInfo tresorAlgorithmInfoForName:self.cryptoalgorithm]
-                                                  usingKey:decryptedMasterKey
-                                                     andIV:[self.cryptoiv hexString2RawValue]
-                                                     error:error];
+{ NSString* result = [NSString stringWithFormat:@"Key[cryptoiv:%@ encryptedkey:%@]",self.cryptoiv,[self.encryptedkey shortHexStringValue]];
   
   return result;
 }

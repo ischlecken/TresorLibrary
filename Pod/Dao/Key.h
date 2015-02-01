@@ -32,7 +32,6 @@
 
 #pragma mark dao extension
 
--(NSData*) decryptKeyUsingDecryptedMasterKey:(NSData*)decryptedMasterKey andError:(NSError**)error;
 
 @end
 

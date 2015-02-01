@@ -589,6 +589,9 @@ cleanUp:
           case CryptoTagRandomPaddingHash:
             randomPaddingHash = [NSData dataWithBytes:tagData length:tagSize];
             break;
+          default:
+            _NSLOG(@"tag %d is unknown",(unsigned int)tag);
+            break;
         } /* of switch */
       } /* of while */
       
@@ -676,7 +679,7 @@ cleanup:
       goto cleanup;
     } /* of if */
     
-    _NSLOG(@"payload          : %@ %@",[payloadObjectData shortHexStringValue],payloadObjectClass);
+    _NSLOG(@"payload          :%@ %@",[payloadObjectData shortHexStringValue],payloadObjectClass);
     
     NSData* randomPadding     = [NSData dataWithRandom:127];
     _NSLOG(@"randomPadding    :%@",[randomPadding shortHexStringValue]);
