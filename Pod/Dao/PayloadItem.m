@@ -24,7 +24,7 @@
 
 @implementation PayloadItem
 
-@synthesize title=_title,subtitle=_subtitle,icon=_icon,payloadoid=_payloadoid;
+@synthesize title=_title,subtitle=_subtitle,icon=_icon,payloadoid=_payloadoid,iconcolor=_iconcolor;
 
 /**
  *
@@ -36,6 +36,7 @@
   { _title      = nil;
     _subtitle   = nil;
     _icon       = nil;
+    _iconcolor  = nil;
     _payloadoid = nil;
   } /* of if */
   
@@ -53,6 +54,7 @@
   { _title      = title;
     _subtitle   = subtitle;
     _icon       = icon;
+    _iconcolor  = @"#ff00aa";
     _payloadoid = payloadoid;
   } /* of if */
   
@@ -69,6 +71,7 @@
   { _title      = [decoder decodeObjectForKey :@"title"];
     _subtitle   = [decoder decodeObjectForKey :@"subtitle"];
     _icon       = [decoder decodeObjectForKey :@"icon"];
+    _iconcolor  = [decoder decodeObjectForKey :@"iconcolor"];
     _payloadoid = [decoder decodeObjectForKey :@"payloadoid"];
   } /* of if */
   
@@ -82,6 +85,7 @@
 { [encoder encodeObject :self.title      forKey:@"title"];
   [encoder encodeObject :self.subtitle   forKey:@"subtitle"];
   [encoder encodeObject :self.icon       forKey:@"icon"];
+  [encoder encodeObject :self.iconcolor  forKey:@"iconcolor"];
   [encoder encodeObject :self.payloadoid forKey:@"payloadoid"];
 }
 
@@ -91,10 +95,11 @@
 -(id) copyWithZone:(NSZone *)zone
 { PayloadItem* result = [[PayloadItem allocWithZone:zone] init];
   
-  result->_title             = self.title;
-  result->_subtitle          = self.subtitle;
-  result->_icon              = self.icon;
-  result->_payloadoid   = self.payloadoid;
+  result->_title      = self.title;
+  result->_subtitle   = self.subtitle;
+  result->_icon       = self.icon;
+  result->_iconcolor  = self.iconcolor;
+  result->_payloadoid = self.payloadoid;
   
   return result;
 }
@@ -127,7 +132,7 @@
 -(PayloadItem*) updateIcon:(NSString*)icon
 { PayloadItem* result = [self copy];
   
-  result->_icon = icon;
+  result->_icon      = icon;
   
   return result;
 }
@@ -136,12 +141,38 @@
 /**
  *
  */
--(PayloadItem*) updateTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon
+-(PayloadItem*) updateIconColor:(NSString*)iconColor
 { PayloadItem* result = [self copy];
   
-  result->_title    = title;
-  result->_subtitle = subtitle;
-  result->_icon     = icon;
+  result->_iconcolor = iconColor;
+  
+  return result;
+}
+
+
+/**
+ *
+ */
+-(PayloadItem*) updateIcon:(NSString*)icon andColor:(NSString*)iconColor
+{ PayloadItem* result = [self copy];
+  
+  result->_icon      = icon;
+  result->_iconcolor = iconColor;
+  
+  return result;
+}
+
+
+/**
+ *
+ */
+-(PayloadItem*) updateTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andColor:(NSString*)iconColor
+{ PayloadItem* result = [self copy];
+  
+  result->_title     = title;
+  result->_subtitle  = subtitle;
+  result->_icon      = icon;
+  result->_iconcolor = iconColor;
   
   return result;
 }
@@ -170,7 +201,8 @@
     if( ((self.title          ==nil && payloadItemObject.title          ==nil) || [payloadItemObject.title           isEqual:self.title]          ) &&
         ((self.subtitle       ==nil && payloadItemObject.subtitle       ==nil) || [payloadItemObject.subtitle        isEqual:self.subtitle]       ) &&
         ((self.icon           ==nil && payloadItemObject.icon           ==nil) || [payloadItemObject.icon            isEqual:self.icon]           ) &&
-        ((self.payloadoid==nil && payloadItemObject.payloadoid==nil) || [payloadItemObject.payloadoid isEqual:self.payloadoid])
+        ((self.iconcolor      ==nil && payloadItemObject.iconcolor      ==nil) || [payloadItemObject.iconcolor       isEqual:self.iconcolor]      ) &&
+        ((self.payloadoid     ==nil && payloadItemObject.payloadoid     ==nil) || [payloadItemObject.payloadoid      isEqual:self.payloadoid]     )
       )
       result = YES;
   } /* of if */
@@ -189,6 +221,7 @@
   [result appendFormat:@"title:%@ ",self.title];
   [result appendFormat:@"subtitle:%@ ",self.subtitle];
   [result appendFormat:@"icon:%@ ",self.icon];
+  [result appendFormat:@"iconcolor:%@ ",self.iconcolor];
   [result appendFormat:@"payloadoid:%@ ",self.payloadoid];
   
   [result appendString:@"]"];

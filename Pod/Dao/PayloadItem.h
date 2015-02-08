@@ -26,7 +26,9 @@
 -(PayloadItem*) updateTitle:(NSString*)title;
 -(PayloadItem*) updateSubtitle:(NSString*)subtitle;
 -(PayloadItem*) updateIcon:(NSString*)icon;
--(PayloadItem*) updateTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon;
+-(PayloadItem*) updateIconColor:(NSString*)iconColor;
+-(PayloadItem*) updateIcon:(NSString*)icon andColor:(NSString*)iconColor;
+-(PayloadItem*) updateTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andColor:(NSString*)iconColor;
 -(PayloadItem*) updatePayloadObjectId:(NSString*)payloadoid;
 
 -(Payload*)     payload:(NSError**)error;

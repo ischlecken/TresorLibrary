@@ -39,6 +39,7 @@
 @dynamic vault;
 @dynamic payloads;
 
+
 #pragma mark dao extension
 
 #pragma mark PayloadItem protocol
@@ -64,6 +65,12 @@
 /**
  *
  */
+-(NSString*) iconcolor
+{ return nil; }
+
+/**
+ *
+ */
 -(void) setTitle:(NSString*)value
 { self.message = value; }
 
@@ -77,6 +84,12 @@
  *
  */
 -(void) setIcon:(NSString*)value
+{ }
+
+/**
+ *
+ */
+-(void) setIconcolor:(NSString*)value
 { }
 
 /**
@@ -437,7 +450,7 @@
 /**
  *
  */
--(PMKPromise*) updatePayloadItemWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon forPath:(NSIndexPath*)path atPosition:(NSInteger)position
+-(PMKPromise*) updatePayloadItemWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andColor:(NSString*)iconcolor forPath:(NSIndexPath*)path atPosition:(NSInteger)position
 { __block NSMutableArray* parentPath = nil;
   
   PMKPromise* result = [self parentPathForPath:path]
@@ -455,7 +468,7 @@
         return (id) _TRESORERROR(TresorErrorPayloadIsNotDecrypted);
 
       PayloadItem*     pi     = [pil objectAtIndex:position];
-      PayloadItem*     newPi  = [pi updateTitle:title andSubtitle:subtitle andIcon:icon];
+      PayloadItem*     newPi  = [pi updateTitle:title andSubtitle:subtitle andIcon:icon andColor:iconcolor];
       PayloadItemList* newPil = [pil updateItem:newPi at:position];
       PMKPromise*      newPl  = [[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
       

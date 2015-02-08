@@ -40,6 +40,7 @@
 #define kOptionOnColorName   @"optionOnColor"
 #define kDisabledColorName   @"disabledColor"
 #define kTitleColorName      @"titleColor"
+#define kIconColorsName      @"iconColors"
 
 #define kBackgroundImage     @"background.png"
 

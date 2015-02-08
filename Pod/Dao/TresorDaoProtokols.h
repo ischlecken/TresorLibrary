@@ -40,6 +40,7 @@
 @property(strong,nonatomic) NSString* title;
 @property(strong,nonatomic) NSString* subtitle;
 @property(strong,nonatomic) NSString* icon;
+@property(strong,nonatomic) NSString* iconcolor;
 @property(strong,nonatomic) NSString* payloadoid;
 @end
 
