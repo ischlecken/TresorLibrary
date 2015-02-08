@@ -157,17 +157,17 @@ cleanUp:
     case tresorAlgorithmAES192:
     case tresorAlgorithmAES256:
     case tresorAlgorithmAES128:
-      blockSize       = algorithm.blockSize;
+      blockSize       = (unsigned)algorithm.blockSize;
       cryptFkt        = CommonCryptoAES128Encrypt;
       break;
     case tresorAlgorithmCASTCC:
       useCommonCrypto = TRUE;
-      blockSize       = algorithm.blockSize;
+      blockSize       = (unsigned)algorithm.blockSize;
       cryptFkt        = CommonCryptoCASTEncrypt;
       break;
     case tresorAlgorithmTwofish256:
       useCommonCrypto = FALSE;
-      blockSize       = algorithm.blockSize;
+      blockSize       = (unsigned)algorithm.blockSize;
       cryptFkt        = CommonCryptoTwofishEncrypt;
       break;
     default:
@@ -228,17 +228,17 @@ cleanUp:
     case tresorAlgorithmAES128:
     case tresorAlgorithmAES192:
     case tresorAlgorithmAES256:
-      blockSize       = algorithm.blockSize;
+      blockSize       = (unsigned)algorithm.blockSize;
       decryptFkt      = CommonCryptoAES128Decrypt;
       break;
     case tresorAlgorithmCASTCC:
       useCommonCrypto = TRUE;
-      blockSize       = algorithm.blockSize;
+      blockSize       = (unsigned)algorithm.blockSize;
       decryptFkt      = CommonCryptoCASTDecrypt;
       break;
     case tresorAlgorithmTwofish256:
       useCommonCrypto = FALSE;
-      blockSize       = algorithm.blockSize;
+      blockSize       = (unsigned)algorithm.blockSize;
       decryptFkt      = CommonCryptoTwofishDecrypt;
       break;
     default:

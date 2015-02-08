@@ -19,7 +19,7 @@
 #import "TresorConfig.h"
 #import "TresorDefaults.h"
 #import "SSKeychain.h"
- 
+#import "UIColor+Hexadecimal.h"
 
 #pragma mark - UserDefaultDesc
 
@@ -52,12 +52,11 @@
 
 #pragma mark - TresorConfig
 @interface TresorConfig ()
-{
-  NSString* _userId;
-}
-
 @property(nonatomic,strong) NSDictionary*        userDefaultDescription;
 @property(nonatomic,strong) NSMutableDictionary* userDefaults;
+
+@property(nonatomic,strong) NSDictionary*        colorScheme;
+@property(nonatomic,strong) NSMutableDictionary* colorCache;
 
 @end
 
@@ -86,11 +85,9 @@
   if (self)
   { NSArray* udd =
     @[
-       [UserDefaultDesc userDefaultDescWithKeyName:@"colorScheme"          andDefaultValue:[NSNumber numberWithInteger:0]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"listViewHelpStatus"   andDefaultValue:[NSNumber numberWithInteger:0]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"detailViewHelpStatus" andDefaultValue:[NSNumber numberWithInteger:0]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"walkthroughShowed"    andDefaultValue:[NSNumber numberWithBool:NO]],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"useCloud"             andDefaultValue:[NSNumber numberWithBool:YES]]
+       [UserDefaultDesc userDefaultDescWithKeyName:@"colorSchemeName"      andDefaultValue:@"default"],
+       [UserDefaultDesc userDefaultDescWithKeyName:@"useCloud"             andDefaultValue:[NSNumber numberWithBool:YES]],
+       [UserDefaultDesc userDefaultDescWithKeyName:@"usageCount"           andDefaultValue:[NSNumber numberWithInteger:0]]
      ];
     
     NSMutableDictionary* udd1 = [[NSMutableDictionary alloc] initWithCapacity:udd.count];
@@ -101,6 +98,8 @@
     self.userDefaults = [[NSMutableDictionary alloc] initWithCapacity:udd.count];
     
     [self registerUserDefaults];
+    [self loadColorScheme];
+    [self loadIconList];
   } /* of if */
   
   return self;
@@ -146,6 +145,15 @@
   return result;
 }
 
+/**
+ *
+ */
+-(BOOL) configValueExists:(NSString*)key
+{ UserDefaultDesc* udd = self.userDefaultDescription[key];
+  
+  return udd!=nil;
+}
+
 
 
 /**
@@ -160,56 +168,14 @@
     [[NSUserDefaults standardUserDefaults] synchronize];
     
     [self.userDefaults setObject:value forKey:key];
+    
+    if( [key isEqualToString:@"colorSchemeName"] )
+    { self.colorCache = nil;
+    } /* of else if */
   } /* of if */
   
   //_NSLOG(@"setConfigValue(value=%@,key=%@)",value,key);
 }
-
-/**
- *
- */
--(NSInteger) colorScheme
-{ NSNumber* result = [self getConfigValue:@"colorScheme"]; return [result integerValue]; }
-
-/**
- *
- */
--(void) setColorScheme:(NSInteger)value
-{ [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"colorScheme"]; }
-
-/**
- *
- */
--(void) setListViewHelpStatus:(NSInteger)value
-{ [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"listViewHelpStatus"]; }
-
-
-/**
- *
- */
--(NSInteger) detailViewHelpStatus
-{ NSNumber* result = [self getConfigValue:@"detailViewHelpStatus"]; return [result integerValue]; }
-
-/**
- *
- */
--(void) setDetailViewHelpStatus:(NSInteger)value
-{ [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"detailViewHelpStatus"]; }
-
-
-
-/**
- *
- */
--(BOOL) walkthroughShowed
-{ NSNumber* result = [self getConfigValue:@"walkthroughShowed"]; return [result boolValue]; }
-
-/**
- *
- */
--(void) setWalkthroughShowed:(BOOL)value
-{ [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"walkthroughShowed"]; }
-
 
 /**
  *
@@ -224,6 +190,29 @@
 -(void) setUseCloud:(BOOL)value
 { [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"useCloud"]; }
 
+/**
+ *
+ */
+-(NSInteger) usageCount
+{ NSNumber* result = [self getConfigValue:@"usageCount"]; return [result integerValue]; }
+
+/**
+ *
+ */
+-(void) setUsageCount:(NSInteger)value
+{ [self setConfigValue:[NSNumber numberWithInteger:value] forKey:@"usageCount"]; }
+
+/**
+ *
+ */
+-(NSString*) colorSchemeName
+{ return [self getConfigValue:@"colorSchemeName"]; }
+
+/**
+ *
+ */
+-(void) setColorSchemeName:(NSString*)value
+{ [self setConfigValue:value forKey:@"colorSchemeName"]; }
 
 #if 0
 
@@ -294,6 +283,98 @@
   return result;
 }
 
+/**
+ *
+ */
++(NSURL*) appGroupURLForFileName:(NSString*)fileName
+{ NSURL* storeURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:kAppGroup];
+  NSURL* result   = [storeURL URLByAppendingPathComponent:fileName];
+  
+  //_NSLOG(@"result:%@",result);
+  
+  return result;
+}
+
+/**
+ *
+ */
++(void) copyToSharedLocationIfNotExists:(NSString*)fileName andType:(NSString*)fileType
+{ NSString* sharedFilePath = [[TresorConfig appGroupURLForFileName:[NSString stringWithFormat:@"%@.%@",fileName,fileType]] path];
+  
+  if( ![[NSFileManager defaultManager] fileExistsAtPath:sharedFilePath] )
+  { NSString* filePath = [[NSBundle mainBundle] pathForResource:fileName ofType:fileType];
+    NSError*  error    = nil;
+    
+    if( ![[NSFileManager defaultManager] copyItemAtPath:filePath toPath:sharedFilePath error:&error] )
+      _NSLOG(@"could not copy %@ to %@:%@",filePath,sharedFilePath,error);
+  } /* of if */
+}
+
+/**
+ *
+ */
++(void) copyToSharedLocation:(NSString*)fileName andType:(NSString*)fileType
+{ NSString* sharedFilePath = [[TresorConfig appGroupURLForFileName:[NSString stringWithFormat:@"%@.%@",fileName,fileType]] path];
+  
+  NSError* error = nil;
+  
+  if( [[NSFileManager defaultManager] fileExistsAtPath:sharedFilePath] )
+  { if( ![[NSFileManager defaultManager] removeItemAtPath:sharedFilePath error:&error] )
+    _NSLOG(@"could not remove %@:%@",sharedFilePath,error);
+  } /* of if */
+  
+  NSString* filePath = [[NSBundle mainBundle] pathForResource:fileName ofType:fileType];
+  if( ![[NSFileManager defaultManager] copyItemAtPath:filePath toPath:sharedFilePath error:&error] )
+    _NSLOG(@"could not copy %@ to %@:%@",filePath,sharedFilePath,error);
+}
+
+/**
+ *
+ */
++(BOOL) copyIfModified:(NSURL*)sourceURL destination:(NSURL*)destinationURL
+{ BOOL           result      = NO;
+  BOOL           copyFile    = NO;
+  NSFileManager* fileManager = [NSFileManager defaultManager];
+  
+  if( sourceURL && destinationURL )
+  { if( ![fileManager fileExistsAtPath:[destinationURL path]] )
+    copyFile = YES;
+  else
+  { NSDictionary* sourceFileAttributes = [fileManager attributesOfItemAtPath:[sourceURL path] error:NULL];
+    NSDictionary* destFileAttributes   = [fileManager attributesOfItemAtPath:[destinationURL path] error:NULL];
+    
+    if( sourceFileAttributes && destFileAttributes )
+    { NSNumber* sourceFileSize = sourceFileAttributes[NSFileSize];
+      NSNumber* destFileSize   = destFileAttributes[NSFileSize];
+      
+      _NSLOG(@"sourceFileSize:%@ destFileSize:%@",sourceFileSize,destFileSize);
+      
+      if( ![sourceFileSize isEqualToNumber:destFileSize] )
+        copyFile = YES;
+    } /* of if */
+  } /* of else */
+    
+    if( copyFile )
+    { NSError* error = nil;
+      
+      if( [fileManager fileExistsAtPath:[destinationURL path]] &&
+         ![fileManager removeItemAtPath:[destinationURL path] error:&error]
+         )
+        _NSLOG(@"remove of %@ failed:%@",destinationURL,error);
+      
+      if( [fileManager copyItemAtURL:sourceURL toURL:destinationURL error:&error] )
+      { _NSLOG(@"copied %@ to %@",sourceURL,destinationURL);
+        
+        result = YES;
+      } /* of if */
+      else
+        _NSLOG(@"copy of %@ to %@ failed:%@",sourceURL,destinationURL,error);
+    } /* of if */
+  } /* of if */
+  
+  return result;
+}
+
 
 #pragma mark User Defaults
 
@@ -306,8 +387,6 @@
   NSArray*      changedKeys  = info[NSUbiquitousKeyValueStoreChangedKeysKey];
   
   _NSLOG(@"ubiqKeyValueStore[%ld]:%@",(long)changeReason,changedKeys);
-  
-  _userId = nil;
 }
 
 /**
@@ -360,59 +439,10 @@
   
   [NSUserDefaults standardUserDefaults];
   
-#if 0
-  { NSUbiquitousKeyValueStore* defaults = [NSUbiquitousKeyValueStore defaultStore];
-    
-    NSDictionary* content = [defaults dictionaryRepresentation];
-    
-    for( NSString* key in content.allKeys )
-      [defaults removeObjectForKey:key];
-    
-    [defaults synchronize];
-  } /* of if */
-#endif
-  
   self.userDefaults = [[NSMutableDictionary alloc] initWithCapacity:self.userDefaultDescription.count];
 }
 
 
-/**
- *
- */
-#if 0
--(NSString*) userId
-{ if( _userId==nil && self.iCloudAvailable )
-  { NSUbiquitousKeyValueStore* defaults = [NSUbiquitousKeyValueStore defaultStore];
-    
-    _NSLOG(@"NSUbiquitousKeyValueStore:%@",[defaults dictionaryRepresentation]);
-      
-    _userId = [defaults objectForKey:kAppUniqueUserId];
-    
-    if( _userId )
-      [SSKeychain setPassword:_userId forService:kAppKeyChainService account:kAppUniqueUserId];
-  } /* of if */
-  
-  if( _userId==nil )
-    _userId = [SSKeychain passwordForService:kAppKeyChainService account:kAppUniqueUserId];
-  
-  if( _userId==nil )
-  { NSUUID* uuid = [[NSUUID alloc] init];
-    
-    _userId = [uuid UUIDString];
-    
-    [SSKeychain setPassword:_userId forService:kAppKeyChainService account:kAppUniqueUserId];
-  
-    if( self.iCloudAvailable )
-    { NSUbiquitousKeyValueStore* defaults = [NSUbiquitousKeyValueStore defaultStore];
-      
-      [defaults setObject:_userId forKey:kAppUniqueUserId];
-      [defaults synchronize];
-    } /* of if */
-  } /* of if */
-  
-  return _userId;
-}
-#endif
 
 #pragma mark Info
 
@@ -443,4 +473,104 @@
   return info[@"CFBundleVersion"];
 }
 
+#pragma mark Colorscheme
+
+/**
+ *
+ */
+-(void) loadColorScheme
+{ NSError*      error    = nil;
+  NSString*     dataPath = [[TresorConfig colorSchemeURL] path];
+  
+  if( dataPath )
+    self.colorScheme = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:dataPath]
+                                                       options:kNilOptions
+                                                         error:&error];
+  
+  _NSLOG(@"colorScheme:%@",self.colorScheme);
+}
+
+
+/**
+ *
+ */
+-(NSArray*) colorSchemeNames
+{ NSMutableArray* result = [[NSMutableArray alloc] initWithCapacity:3];
+  
+  for( NSString* colorSchemeName in self.colorScheme )
+    [result addObject:colorSchemeName];
+  
+  return result;
+}
+
+/**
+ *
+ */
+-(id) colorWithName:(NSString*)colorName
+{ id result = nil;
+  
+  if( self.colorCache==nil )
+    self.colorCache = [[NSMutableDictionary alloc] initWithCapacity:10];
+  
+  result = [self.colorCache objectForKey:colorName];
+  
+  if( result==nil && self.colorScheme )
+  { NSDictionary* currentColorScheme = [self.colorScheme objectForKey:self.colorSchemeName];
+    
+    if( currentColorScheme )
+    { id colorValue = [currentColorScheme objectForKey:colorName];
+      
+      if( [colorValue isKindOfClass:[NSString class]] )
+        result = [UIColor colorWithHexString:colorValue];
+      else if( [colorValue isKindOfClass:[NSArray class]] )
+      { NSMutableArray* colors = [[NSMutableArray alloc] initWithCapacity:5];
+        
+        for( NSString* c in colorValue )
+          [colors addObject:[UIColor colorWithHexString:c]];
+        
+        result = colors;
+      } /* of else if */
+      
+      if( result )
+        [self.colorCache setObject:result forKey:colorName];
+    } /* of if */
+  } /* of if */
+  
+  _NSLOG(@"%@:%@",colorName,result);
+  
+  return result;
+}
+
+/**
+ *
+ */
++(NSURL*) colorSchemeURL
+{
+#if 0
+  return [TresorConfig appGroupURLForFileName:[NSString stringWithFormat:@"%@.json",kColorSchemeFileName]];
+#else
+  NSString* path = [[NSBundle mainBundle] pathForResource:kColorSchemeFileName ofType:@"json"];
+  
+  return [NSURL fileURLWithPath:path];
+#endif
+}
+
+#pragma mark IconList
+
+/**
+ *
+ */
+-(void) loadIconList
+{ NSString* dataPath = [[NSBundle mainBundle] pathForResource:kIconListFileName ofType:@"json"];
+  NSError*  error    = nil;
+  
+  if( dataPath )
+  { NSArray* iconList = [NSJSONSerialization JSONObjectWithData:[NSData dataWithContentsOfFile:dataPath]
+                                                        options:kNilOptions
+                                                          error:&error];
+    
+    if( iconList )
+      self->_iconList = iconList;
+  } /* of if */
+}
 @end

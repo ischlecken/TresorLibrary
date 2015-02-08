@@ -43,8 +43,8 @@
 #import "CryptoService.h"
 #import "DecryptedObjectCache.h"
 
-#import "ColorScheme.h"
 #import "SectionInfo.h"
+#import "SettingsItem.h"
 #import "FileUtil.h"
 
 #import "NSData+Crypto.h"
@@ -57,6 +57,8 @@
 
 #import "UIImage+ImageEffects.h"
 #import "UIImage+Tint.h"
+#import "UIColor+Hexadecimal.h"
+#import "NSArray+SectionInfo.h"
 
 #import "TresorUtilError.h"
 #import "TresorConfig.h"

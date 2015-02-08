@@ -18,15 +18,20 @@
 
 @interface TresorUtil : NSObject
 
-+(instancetype)               sharedInstance;
++(instancetype) sharedInstance;
 
-+(UIImage*)                   tintedImage:(NSString*)imageName;
-+(UIImage*)                   blurredBackgroundImage:(BOOL)extraLight forView:(UIView*)view;
-+(UIImage*)                   backgroundImage:(UIView*)view;
-+(void)                       playSound:(NSString*)soundName;
-+(void)                       earthquake:(UIView*)itemView;
++(UIImage*)     tintedImage:(NSString*)imageName;
++(UIImage*)     blurredBackgroundImage:(BOOL)extraLight forView:(UIView*)view;
++(UIImage*)     backgroundImage:(UIView*)view;
++(void)         playSound:(NSString*)soundName;
++(void)         earthquake:(UIView*)itemView;
 
--(UIImage*)                   backgroundImage:(BOOL)extraLight;
--(void)                       resetBackgroundImage;
++(void)         aboutDialogue:(UIViewController*)vc;
++(void)         appStoreRatingReminderDialogue:(UIViewController*)vc;
++(void)         openAppStore;
++(void)         openHomepage;
+
+-(UIImage*)     backgroundImage:(BOOL)extraLight;
+-(void)         resetBackgroundImage;
 
 @end

@@ -19,22 +19,30 @@
 #define _TRESORCONFIG [TresorConfig sharedInstance]
 
 @interface TresorConfig : NSObject
-@property(          assign, nonatomic) NSInteger    colorScheme;
 @property(          assign, nonatomic) BOOL         useCloud;
-@property(          assign, nonatomic) BOOL         walkthroughShowed;
-@property(          assign, nonatomic) NSInteger    listViewHelpStatus;
-@property(          assign, nonatomic) NSInteger    detailViewHelpStatus;
+@property(          assign, nonatomic) NSInteger    usageCount;
+
+@property(          strong, nonatomic) NSString*    colorSchemeName;
+@property(readonly, strong, nonatomic) NSArray*     colorSchemeNames;
+
+@property(readonly, strong, nonatomic) NSArray*     iconList;
 
 @property(readonly ,strong, nonatomic) NSString*    appName;
 @property(readonly ,strong, nonatomic) NSString*    appVersion;
 @property(readonly ,strong, nonatomic) NSString*    appBuild;
 
-+(NSURL*)       applicationDocumentsDirectory;
+-(id)           getConfigValue:(NSString*)key;
+-(BOOL)         hasConfigValueChanged:(NSString*)key;
+-(BOOL)         configValueExists:(NSString*)key;
+-(void)         setConfigValue:(id)value forKey:(NSString*)key;
+
 -(void)         resetUserDefaults;
+-(id)           colorWithName:(NSString*)colorName;
 
++(NSURL*)       applicationDocumentsDirectory;
 +(NSURL*)       databaseStoreURL;
++(NSURL*)       colorSchemeURL;
+
 +(BOOL)         databaseStoreExists;
-
 +(instancetype) sharedInstance;
-
 @end

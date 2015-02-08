@@ -102,14 +102,14 @@ if( condition ) \
   switch( algorithm.type )
   { case tresorAlgorithmMD5:
     case tresorAlgorithmMD5CC:
-      { digest = buffer_alloc(algorithm.blockSize, NULL);
+      { digest = buffer_alloc((unsigned)algorithm.blockSize, NULL);
         TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
         
         TRESOR_CHECKERROR( internalErrCode!=EXIT_SUCCESS,TresorErrorHash,@"CommonCryptoMD5 failed",internalErrCode );
       }
       break;
     case tresorAlgorithmSHA1CC:
-      { digest = buffer_alloc(algorithm.blockSize, NULL);
+      { digest = buffer_alloc((unsigned)algorithm.blockSize, NULL);
         TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
         
         CC_SHA1_CTX ctx;
@@ -127,7 +127,7 @@ if( condition ) \
       }
       break;
     case tresorAlgorithmSHA1:
-      { digest = buffer_alloc(algorithm.blockSize, NULL);
+      { digest = buffer_alloc((unsigned)algorithm.blockSize, NULL);
         TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
       
         SHA1ContextT ctx[1];
@@ -153,7 +153,7 @@ if( condition ) \
       break;
     case tresorAlgorithmSHA256:
     case tresorAlgorithmSHA256CC:
-      { digest = buffer_alloc(algorithm.blockSize, NULL);
+      { digest = buffer_alloc((unsigned)algorithm.blockSize, NULL);
         TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
         
         TRESOR_CHECKERROR( internalErrCode!=EXIT_SUCCESS,TresorErrorHash,@"CommonCryptoSHA256 failed",internalErrCode );
@@ -161,7 +161,7 @@ if( condition ) \
       break;
     case tresorAlgorithmSHA512:
     case tresorAlgorithmSHA512CC:
-      { digest = buffer_alloc(algorithm.blockSize, NULL);
+      { digest = buffer_alloc((unsigned)algorithm.blockSize, NULL);
         TRESOR_CHECKERROR( digest==NULL,TresorErrorHash,@"buffer not allocated",0 );
       
         TRESOR_CHECKERROR( internalErrCode!=EXIT_SUCCESS,TresorErrorHash,@"CommonCryptoSHA512 failed",internalErrCode );

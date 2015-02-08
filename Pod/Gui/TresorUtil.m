@@ -20,9 +20,9 @@
 #import "TresorUtil.h"
 #import "UIImage+ImageEffects.h"
 #import "UIImage+Tint.h"
-#import "ColorScheme.h"
-
-#define kBackgroundImage                  @"background.png"
+#import "TresorConfig.h"
+#import "TresorDefaults.h"
+#import "Macros.h"
 
 @interface TresorUtil ()
 @property(nonatomic,strong) NSMutableArray* backgroundImages;
@@ -101,7 +101,9 @@
   if( [self.backgroundImages[index] isKindOfClass:[NSNull class]] )
   { UIImage* backgroundImage = [UIImage imageNamed:kBackgroundImage];
     
-    backgroundImage = [backgroundImage tintedImageWithColor:_COLORSCHEME.tintColor andBackgroundColor:[UIColor colorWithWhite:0.9 alpha:1.0]];
+    UIColor* tintColor = [_TRESORCONFIG colorWithName:kTintColorName];
+    
+    backgroundImage = [backgroundImage tintedImageWithColor:tintColor andBackgroundColor:[UIColor colorWithWhite:0.9 alpha:1.0]];
     
     self.backgroundImages[index] = extraLight ? [backgroundImage applyExtraLightEffect] : [backgroundImage applyLightEffect];
   } /* of if */
@@ -145,4 +147,70 @@
      
    }];
 }
+
+#pragma mark app info
+
+/**
+ *
+ */
++(void) aboutDialogue:(UIViewController*)vc
+{ NSString*          aboutTitleTmpl   = _LSTR(@"TresorUtil.AboutTitle");
+  NSString*          aboutMessageTmpl = _LSTR(@"TresorUtil.AboutMessage");
+  NSString*          aboutTitle       = [NSString stringWithFormat:aboutTitleTmpl,[_TRESORCONFIG appName]];
+  NSString*          aboutMessage     = [NSString stringWithFormat:aboutMessageTmpl,[_TRESORCONFIG appVersion],[_TRESORCONFIG appBuild]];
+  UIAlertController* alert            = [UIAlertController alertControllerWithTitle:aboutTitle message:aboutMessage preferredStyle:UIAlertControllerStyleAlert];
+  
+  [alert addAction:[UIAlertAction actionWithTitle:_LSTR(@"TresorUtil.OKButtonTitle") style:UIAlertActionStyleDefault handler:NULL]];
+  
+  [vc presentViewController:alert animated:YES completion:NULL];
+}
+
+
+
+/**
+ *
+ */
++(void) openAppStore
+{ NSString* appURL = [NSString stringWithFormat:kAppStoreBaseURL2,kAppName,(long)kAppID,kAppStoreBaseURL1];
+  
+  _NSLOG(@"appURL:%@",appURL);
+  
+  [[UIApplication sharedApplication] openURL:[NSURL URLWithString:appURL]];
+}
+
+/**
+ *
+ */
++(void) appStoreRatingReminderDialogue:(UIViewController*)vc
+{ NSString* alertTitle   = _LSTR(@"RatingReminder.Title");
+  NSString* alertMessage = _LSTR(@"RatingReminder.Message");
+  NSString* appName      = [_TRESORCONFIG appName];
+  
+  UIAlertController* alert    = [UIAlertController alertControllerWithTitle:[NSString stringWithFormat:alertTitle,appName]
+                                                                    message:[NSString stringWithFormat:alertMessage,appName]
+                                                             preferredStyle:UIAlertControllerStyleAlert];
+  
+  [alert addAction:[UIAlertAction actionWithTitle:_LSTR(@"RatingReminder.RateNow.Title") style:UIAlertActionStyleCancel handler:^(UIAlertAction *action)
+                    { _TRESORCONFIG.usageCount = -1000;
+                      [TresorUtil openAppStore];
+                    }]];
+  
+  [alert addAction:[UIAlertAction actionWithTitle:_LSTR(@"RatingReminder.RemindLater.Title") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action)
+                    { _TRESORCONFIG.usageCount = 0;
+                    }]];
+  
+  [alert addAction:[UIAlertAction actionWithTitle:_LSTR(@"RatingReminder.NoNever.Title") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action)
+                    { _TRESORCONFIG.usageCount = -10000;
+                    }]];
+  
+  [vc presentViewController:alert animated:YES completion:NULL];
+}
+
+/**
+ *
+ */
++(void) openHomepage
+{ [[UIApplication sharedApplication] openURL:[NSURL URLWithString:kHomepageURL]];
+}
+
 @end
