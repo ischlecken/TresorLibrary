@@ -86,7 +86,8 @@
   { NSArray* udd =
     @[
        [UserDefaultDesc userDefaultDescWithKeyName:@"colorSchemeName"      andDefaultValue:@"default"],
-       [UserDefaultDesc userDefaultDescWithKeyName:@"useCloud"             andDefaultValue:[NSNumber numberWithBool:YES]],
+       [UserDefaultDesc userDefaultDescWithKeyName:@"useCloud"             andDefaultValue:[NSNumber numberWithBool:NO]],
+       [UserDefaultDesc userDefaultDescWithKeyName:@"useTouchID"           andDefaultValue:[NSNumber numberWithBool:NO]],
        [UserDefaultDesc userDefaultDescWithKeyName:@"usageCount"           andDefaultValue:[NSNumber numberWithInteger:0]]
      ];
     
@@ -181,7 +182,7 @@
  *
  */
 -(BOOL) useCloud
-{ return NO;
+{ return [[self getConfigValue:@"useCloud"] boolValue];
 }
 
 /**
@@ -189,6 +190,20 @@
  */
 -(void) setUseCloud:(BOOL)value
 { [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"useCloud"]; }
+
+/**
+ *
+ */
+-(BOOL) useTouchID
+{ return [[self getConfigValue:@"useTouchID"] boolValue];
+}
+
+/**
+ *
+ */
+-(void) setUseTouchID:(BOOL)value
+{ [self setConfigValue:[NSNumber numberWithBool:value] forKey:@"useTouchID"]; }
+
 
 /**
  *

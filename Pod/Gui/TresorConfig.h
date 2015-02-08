@@ -20,6 +20,7 @@
 
 @interface TresorConfig : NSObject
 @property(          assign, nonatomic) BOOL         useCloud;
+@property(          assign, nonatomic) BOOL         useTouchID;
 @property(          assign, nonatomic) NSInteger    usageCount;
 
 @property(          strong, nonatomic) NSString*    colorSchemeName;
