@@ -21,7 +21,7 @@
 
 @interface PayloadItem : JSONModel<PayloadItem,NSCoding,NSCopying>
 
--(instancetype) initWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andPayloadObjectId:(NSString*)payloadoid;
+-(instancetype) initWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andIconColor:(NSString*)iconColor andPayloadObjectId:(NSString*)payloadoid;
 
 -(PayloadItem*) updateTitle:(NSString*)title;
 -(PayloadItem*) updateSubtitle:(NSString*)subtitle;

@@ -40,8 +40,8 @@ typedef PayloadItemList* (^UpdateParentPathHandler)(PayloadItemList* pl);
 
 -(PMKPromise*)      payloadForPath:(NSIndexPath*)path;
 
--(PMKPromise*)      addPayloadItemWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andObject:(id)obj forPath:(NSIndexPath*)path;
--(PMKPromise*)      addPayloadItemListWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon forPath:(NSIndexPath*)path;
+-(PMKPromise*)      addPayloadItemWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andIconColor:(NSString*)iconColor andObject:(id)obj forPath:(NSIndexPath*)path;
+-(PMKPromise*)      addPayloadItemListWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andIconColor:(NSString*)iconColor forPath:(NSIndexPath*)path;
 
 -(PMKPromise*)      updatePayloadItemWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andColor:(NSString*)iconcolor forPath:(NSIndexPath*)path atPosition:(NSInteger)position;
 -(PMKPromise*)      updatePayloadItemWithObject:(id)obj forPath:(NSIndexPath*)path atPosition:(NSInteger)position;

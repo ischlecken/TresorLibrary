@@ -366,7 +366,7 @@
  * 1.2.3.2 Payload:addedString     +++
  * 2 Payload:String5
  */
--(PMKPromise*) addPayloadItemWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andObject:(id)obj forPath:(NSIndexPath*)path
+-(PMKPromise*) addPayloadItemWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andIconColor:(NSString*)iconColor andObject:(id)obj forPath:(NSIndexPath*)path
 { __block NSMutableArray* parentPath = nil;
   
   PMKPromise* result = [self parentPathForPath:path]
@@ -388,7 +388,7 @@
       if( pil==nil )
         return (id) _TRESORERROR(TresorErrorPayloadIsNotDecrypted);
       
-      PayloadItem*     pi     = [[PayloadItem alloc] initWithTitle:title andSubtitle:subtitle andIcon:icon andPayloadObjectId:[textPayload uniqueObjectId]];
+      PayloadItem*     pi     = [[PayloadItem alloc] initWithTitle:title andSubtitle:subtitle andIcon:icon andIconColor:iconColor andPayloadObjectId:[textPayload uniqueObjectId]];
       PayloadItemList* newPil = [pil addItem:pi];
       PMKPromise*      newPl  = [[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
       
@@ -408,7 +408,7 @@
 /**
  *
  */
--(PMKPromise*) addPayloadItemListWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon forPath:(NSIndexPath*)path
+-(PMKPromise*) addPayloadItemListWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andIconColor:(NSString*)iconColor forPath:(NSIndexPath*)path
 { __block NSMutableArray* parentPath = nil;
   
   PMKPromise* result = [self parentPathForPath:path]
@@ -430,7 +430,7 @@
       if( pil==nil )
         return (id) _TRESORERROR(TresorErrorPayloadIsNotDecrypted);
       
-      PayloadItem*     pi     = [[PayloadItem alloc] initWithTitle:title andSubtitle:subtitle andIcon:icon andPayloadObjectId:[itemListPayload uniqueObjectId]];
+      PayloadItem*     pi     = [[PayloadItem alloc] initWithTitle:title andSubtitle:subtitle andIcon:icon andIconColor:iconColor andPayloadObjectId:[itemListPayload uniqueObjectId]];
       PayloadItemList* newPil = [pil addItem:pi];
       PMKPromise*      newPl  = [[CryptoService sharedInstance] encryptObject:newPil forCommit:self];
       

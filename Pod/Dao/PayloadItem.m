@@ -47,14 +47,14 @@
 /**
  *
  */
--(instancetype) initWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andPayloadObjectId:(NSString*)payloadoid
+-(instancetype) initWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andIconColor:(NSString*)iconColor andPayloadObjectId:(NSString*)payloadoid
 { self = [self init];
   
   if( self )
   { _title      = title;
     _subtitle   = subtitle;
     _icon       = icon;
-    _iconcolor  = @"#ff00aa";
+    _iconcolor  = iconColor;
     _payloadoid = payloadoid;
   } /* of if */
   
