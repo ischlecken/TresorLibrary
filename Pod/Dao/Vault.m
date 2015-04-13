@@ -162,8 +162,10 @@
  *
  */
 -(void) deleteOrphanPayloads
-{ //
-  // FIXME: inperformant implementation, only load orphan payloads, use different moc
+{
+#if 0
+  //
+  // FIXME: inperformance implementation, only load orphan payloads, use different moc
   //
   NSError*                error        = nil;
   NSFetchRequest*         fetchRequest = [[NSFetchRequest alloc] init];
@@ -188,6 +190,9 @@
   
   [moc save:&error];
   addToErrorList(@"could not delete orphan payloads", error, AddErrorNothing);
+#else
+  _NSLOG_SELECTOR;
+#endif
 }
 
 /**
