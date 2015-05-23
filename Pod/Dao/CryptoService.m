@@ -65,9 +65,7 @@
   { MasterKey* masterKey = [[payload vault] pinMasterKey];
     
     if( masterKey==nil )
-      result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
-      { resolve(_TRESORERROR(TresorErrorCouldNotFindPINMasterKey));
-      }];
+      result = [PMKPromise promiseWithValue:_TRESORERROR(TresorErrorCouldNotFindPINMasterKey)];
     else
     { PMKPromise* decryptedPayloadKey = [self.delegate decryptedMasterKey:masterKey];
       
@@ -92,9 +90,7 @@
   
   MasterKey* masterKey = [commit.vault pinMasterKey];
   if( masterKey==nil )
-    result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
-    { resolve(_TRESORERROR(TresorErrorCouldNotFindPINMasterKey));
-    }];
+    result = [PMKPromise promiseWithValue:_TRESORERROR(TresorErrorCouldNotFindPINMasterKey)];
   else
   { PMKPromise* decryptedPayloadKey = [self.delegate decryptedMasterKey:masterKey];
     
