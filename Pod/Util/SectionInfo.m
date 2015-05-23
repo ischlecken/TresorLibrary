@@ -70,6 +70,8 @@
 
 @implementation MutableSectionInfo
 
+@dynamic items;
+
 /**
  *
  */

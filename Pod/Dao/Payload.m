@@ -87,12 +87,12 @@
   PMKPromise* result = [[CryptoService sharedInstance] decryptPayload:self]
   .then(^(Payload* payload)
   {
-    return [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
+    return [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
     {
       if( [visitor respondsToSelector:@selector(visitPayload:andState:)] )
         [visitor visitPayload:self andState:0];
       
-      fulfiller(self);
+      resolve(self);
     }];
   })
   .then(^(Payload* payload)
@@ -167,7 +167,7 @@
  *
  */
 -(PMKPromise*) decryptPayloadUsingDecryptedMasterKey:(NSData*)decryptedMasterKey
-{ PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
+{ PMKPromise* result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
   { NSError* error = nil;
     
     { if( self.key==nil )
@@ -215,9 +215,9 @@
         
       cleanup1:
         if( decryptedPayload )
-          fulfill(self);
+          resolve(self);
         else
-          reject(error);
+          resolve(error);
         
         _NSLOG(@"stop");
       });
@@ -225,7 +225,7 @@
     
   cleanup0:
       if( error )
-        reject(error);
+        resolve(error);
     
   }];
   
@@ -240,7 +240,7 @@
 { PMKPromise* result = nil;
   
   if( object && commit && commit.vault && decryptedMasterKey )
-    result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
+    result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
     {
       dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
       { _NSLOG(@"begin");
@@ -290,9 +290,9 @@
         
       cleanup:
         if( cpp )
-          fulfiller(cpp);
+          resolve(cpp);
         else
-          rejecter(error);
+          resolve(error);
         
         _NSLOG(@"end");
       });

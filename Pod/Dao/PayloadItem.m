@@ -243,20 +243,18 @@
  */
 -(PMKPromise*) acceptVisitor:(id)visitor
 {
-  PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
+  PMKPromise* result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
   {
     if( [visitor respondsToSelector:@selector(visitPayloadItem:andState:)] )
       [visitor visitPayloadItem:self andState:0];
 
-    fulfiller(self);
+    resolve(self);
   }]
   .then(^()
-  {
-    return [[self payload:NULL] acceptVisitor:visitor];
+  { return [[self payload:NULL] acceptVisitor:visitor];
   })
   .then(^()
-  {
-    if( [visitor respondsToSelector:@selector(visitPayloadItem:andState:)] )
+  { if( [visitor respondsToSelector:@selector(visitPayloadItem:andState:)] )
       [visitor visitPayloadItem:self andState:1];
   });
   

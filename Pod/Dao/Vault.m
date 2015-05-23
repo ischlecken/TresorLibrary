@@ -237,11 +237,11 @@
  */
 -(PMKPromise*) acceptVisitor:(id)visitor
 {
-  PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
+  PMKPromise* result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
   { if( [visitor respondsToSelector:@selector(visitVault:andState:)] )
       [visitor visitVault:self andState:0];
        
-    fulfiller(self);
+    resolve(self);
   }]
   .then(^()
   { return [self.commit acceptVisitor:visitor];

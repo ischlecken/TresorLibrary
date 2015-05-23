@@ -67,7 +67,7 @@
  *
  */
 +(PMKPromise*) masterKeyWithVaultParameter:(VaultParameter*)parameter
-{ PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
+{ PMKPromise* result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
   {
     dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
     { _NSLOG(@"start");
@@ -184,9 +184,9 @@
       
 cleanup:
       if( cmkp )
-        fulfiller(cmkp);
+        resolve(cmkp);
       else
-        rejecter(error);
+        resolve(error);
       
       _NSLOG(@"stop");
     });
@@ -222,7 +222,7 @@ cleanup:
  *
  */
 -(PMKPromise*) decryptedMasterKeyUsingPIN:(NSString*)pin
-{ PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
+{ PMKPromise* result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
   { dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
     { _NSLOG(@"start");
       
@@ -262,10 +262,10 @@ cleanup:
       if( decryptedMasterKey )
       { //_NSLOG(@"decryptedMasterKey:%@",[decryptedMasterKey shortHexStringValue]);
         
-        fulfill(decryptedMasterKey);
+        resolve(decryptedMasterKey);
       } /* of if */
       else
-        reject(error);
+        resolve(error);
       
       _NSLOG(@"stop");
     });

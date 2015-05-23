@@ -471,7 +471,7 @@ cleanUp:
 +(PMKPromise*) generatePINWithLength:(NSUInteger)pinLength
 { _NSLOG_SELECTOR;
   
-  PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfill, PMKPromiseRejecter reject)
+  PMKPromise* result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
   {
     dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
     { _NSLOG(@"generatePINWithLength.start");
@@ -502,10 +502,10 @@ cleanUp:
         result.algorithm  = @"PBKDF2CC";
         result.iterations = iter;
         
-        fulfill(result);
+        resolve(result);
       } /* of if */
       else
-        reject(error);
+        resolve(error);
     });
   }];
   

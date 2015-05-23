@@ -105,8 +105,8 @@
  *
  */
 -(PMKPromise*) payloadObject
-{ PMKPromise* promise = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
-   { NSError* error = nil;
+{ PMKPromise* promise = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
+  { NSError* error = nil;
      id       obj   = nil;
      
      if( self.payloadoid==nil )
@@ -127,9 +127,9 @@
    cleanup:
      
      if( obj )
-       fulfiller(obj);
+       resolve(obj);
      else
-       rejecter(error);
+       resolve(error);
    }];
   
   return promise;
@@ -148,11 +148,11 @@
  */
 -(PMKPromise*) acceptVisitor:(id)visitor
 {
-  PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
+  PMKPromise* result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
   { if( [visitor respondsToSelector:@selector(visitCommit:andState:)] )
       [visitor visitCommit:self andState:0];
      
-    fulfiller(self);
+    resolve(self);
   }]
   .then(^(Commit* cm)
   { return [cm payloadObject]; })
@@ -207,21 +207,20 @@
  */
 -(PMKPromise*) parentPathForPath:(NSIndexPath*)path
 { NSMutableArray* parentPath = [[NSMutableArray alloc] initWithCapacity:5];
-  PMKPromise*     promise    = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
-  {
-    if( path==nil )
-    { rejecter(_TRESORERROR(TresorErrorPathShouldNotBeNil));
+  PMKPromise*     promise    = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
+  { if( path==nil )
+    { resolve(_TRESORERROR(TresorErrorPathShouldNotBeNil));
        
       return;
     } /* of if */
      
     if( self.payloadoid==nil && path.length>0 )
-    { rejecter(_TRESORERROR(TresorErrorPathMismatch));
+    { resolve(_TRESORERROR(TresorErrorPathMismatch));
        
       return;
     } /* of if */
      
-    fulfiller( [self payloadObject] );
+    resolve( [self payloadObject] );
   }]
   .then(^(Payload* pl)
   { PMKPromise* decodedCommitPayload = [[CryptoService sharedInstance] decryptPayload:pl];
@@ -292,8 +291,8 @@
   result = result.then(^(Payload* payload)
   { [self removePayloadsObject:payload];
    
-    return [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
-            { fulfiller(newPl); }];
+    return [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
+    { resolve(newPl); }];
   });
   
   if( parentPath )

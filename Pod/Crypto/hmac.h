@@ -24,6 +24,8 @@
 #include "buffer.h"
 
 
+#define  USE_SHA1 1
+
 #if !defined(USE_SHA1) && !defined(USE_SHA256)
 #error define USE_SHA1 or USE_SHA256 to set the HMAC hash algorithm
 #endif

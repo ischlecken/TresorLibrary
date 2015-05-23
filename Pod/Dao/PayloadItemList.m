@@ -254,11 +254,11 @@
  */
 -(PMKPromise*) acceptVisitor:(id)visitor
 {
-  PMKPromise* result = [PMKPromise new:^(PMKPromiseFulfiller fulfiller, PMKPromiseRejecter rejecter)
+  PMKPromise* result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
   { if( [visitor respondsToSelector:@selector(visitPayloadItemList:andState:)] )
       [visitor visitPayloadItemList:self andState:0];
     
-    fulfiller(self);
+    resolve(self);
   }];
   
   for( PayloadItem* pi in self.list )
