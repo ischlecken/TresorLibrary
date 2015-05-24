@@ -71,9 +71,25 @@ if( condition ) \
 /**
  *
  */
+-(BOOL) deleteFileURL:(NSURL*)fileURL didFailWithError:(NSError**)error
+{ BOOL result    = FALSE;
+  NSString* path = [fileURL path];
+  
+  if( [_fileManager fileExistsAtPath:path] )
+  { NSLog(@"remove fileURL %@",path);
+    
+    result = [_fileManager removeItemAtPath:path error:error];
+  } /* of if */
+  
+  return result;
+}
+
+/**
+ *
+ */
 -(BOOL) deleteFile:(NSString*)fileName didFailWithError:(NSError**)error
-{ NSString* path               = [self getFullPath:fileName];
-  BOOL      result             = FALSE;
+{ NSString* path   = [self getFullPath:fileName];
+  BOOL      result = FALSE;
   
   if( [_fileManager fileExistsAtPath:path] )
   { NSLog(@"remove file %@",path);

@@ -285,14 +285,17 @@
 /**
  *
  */
-+(NSURL*) databaseStoreURL
-{ return [[self.class applicationDocumentsDirectory] URLByAppendingPathComponent:@"tresor.sqlite"]; }
+-(NSURL*) databaseStoreURL
+{ NSString* dbName = self.databaseStoreName ? self.databaseStoreName : @"tresor.sqlite";
+  
+  return [[self.class applicationDocumentsDirectory] URLByAppendingPathComponent:dbName];
+}
 
 /**
  *
  */
-+(BOOL) databaseStoreExists
-{ NSURL* url    = [self.class databaseStoreURL];
+-(BOOL) databaseStoreExists
+{ NSURL* url    = [self databaseStoreURL];
   BOOL   result = [[NSFileManager defaultManager] fileExistsAtPath:[url path]];
   
   return result;
@@ -502,7 +505,7 @@
                                                        options:kNilOptions
                                                          error:&error];
   
-  _NSLOG(@"colorScheme:%@",self.colorScheme);
+  //_NSLOG(@"colorScheme:%@",self.colorScheme);
 }
 
 

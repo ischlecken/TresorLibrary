@@ -293,6 +293,14 @@
       return error;
     });
   } /* of if */
+  else
+  { NSError* error;
+    
+    if( [_MOC save:&error] )
+      result = [PMKPromise promiseWithValue:vault];
+    else
+      result = [PMKPromise promiseWithValue:error];
+  } /* of else */
   
   return result;
 }

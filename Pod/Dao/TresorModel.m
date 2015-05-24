@@ -79,8 +79,8 @@
  */
 -(void) resetCoreDataObjects
 { [_managedObjectContext reset];
-  _managedObjectContext       = nil;
-  _managedObjectModel         = nil;
+  _managedObjectContext = nil;
+  _managedObjectModel   = nil;
   
   if( _persistentStoreCoordinator )
   { [[NSNotificationCenter defaultCenter] removeObserver:self name:NSPersistentStoreCoordinatorStoresWillChangeNotification       object:_persistentStoreCoordinator];
@@ -119,7 +119,9 @@
  */
 -(NSPersistentStoreCoordinator*) persistentStoreCoordinator
 { if( _persistentStoreCoordinator==nil )
-  { _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+  { NSURL* databaseStoreURL = _TRESORCONFIG.databaseStoreURL;
+  
+    _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
   
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(storesWillChange:)
@@ -141,12 +143,12 @@
        { _NSLOG(@"ubiquityURL:%@ add icloud store",url);
          
          if( available && url!=nil )
-           [self addCloudSQLiteStoreWithURL:[TresorConfig databaseStoreURL] usingConfiguration:nil forUbiquityURL:url toPersistentStoreCoordinator:_persistentStoreCoordinator];
+           [self addCloudSQLiteStoreWithURL:databaseStoreURL usingConfiguration:nil forUbiquityURL:url toPersistentStoreCoordinator:_persistentStoreCoordinator];
          else
-           [self addSQLiteStoreWithURL:[TresorConfig databaseStoreURL] usingConfiguration:nil toPersistentStoreCoordinator:_persistentStoreCoordinator];
+           [self addSQLiteStoreWithURL:databaseStoreURL usingConfiguration:nil toPersistentStoreCoordinator:_persistentStoreCoordinator];
        }];
      else
-       [self addSQLiteStoreWithURL:[TresorConfig databaseStoreURL] usingConfiguration:nil toPersistentStoreCoordinator:_persistentStoreCoordinator];
+       [self addSQLiteStoreWithURL:databaseStoreURL usingConfiguration:nil toPersistentStoreCoordinator:_persistentStoreCoordinator];
   } /* of if */
   
   return _persistentStoreCoordinator;

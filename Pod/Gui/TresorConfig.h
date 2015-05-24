@@ -23,6 +23,11 @@
 @property(          assign, nonatomic) BOOL         useTouchID;
 @property(          assign, nonatomic) NSInteger    usageCount;
 
+/*
+ * can be set for test
+ */
+@property(          strong, nonatomic) NSString*    databaseStoreName;
+
 @property(          strong, nonatomic) NSString*    colorSchemeName;
 @property(readonly, strong, nonatomic) NSArray*     colorSchemeNames;
 
@@ -40,10 +45,11 @@
 -(void)         resetUserDefaults;
 -(id)           colorWithName:(NSString*)colorName;
 
+-(BOOL)         databaseStoreExists;
+-(NSURL*)       databaseStoreURL;
+
 +(NSURL*)       applicationDocumentsDirectory;
-+(NSURL*)       databaseStoreURL;
 +(NSURL*)       colorSchemeURL;
 
-+(BOOL)         databaseStoreExists;
 +(instancetype) sharedInstance;
 @end

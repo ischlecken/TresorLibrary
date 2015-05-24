@@ -30,6 +30,7 @@
 @property (strong, nonatomic,readonly) NSURL*    tmpDirectory;
 
 -(BOOL)            deleteFile:(NSString*)fileName didFailWithError:(NSError**)error;
+-(BOOL)            deleteFileURL:(NSURL*)fileURL didFailWithError:(NSError**)error;
 -(NSString*)       getFullPath:(NSString*)fileName;
 -(NSError*)        copyIfNoExists:(NSString*)fileName;
 -(BOOL)            wipeFile:(NSString*)fileName pass:(int)pass usingDelegate:(id<WipeFileDelegate>)delegate didFailWithError:(NSError**)error;
