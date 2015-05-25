@@ -21,32 +21,35 @@
 
 enum
 {
-  TresorErrorUnknown                    = -1,
-  TresorErrorIllegalArgument            = -2,
+  TresorErrorUnknown                       = -1,
+  TresorErrorIllegalArgument               = -2,
 
-  TresorErrorPadding                    = -3,
-  TresorErrorBufferAlloc                = -4,
-  TresorErrorHash                       = -5,
-  TresorErrorCipher                     = -6,
+  TresorErrorPadding                       = -3,
+  TresorErrorBufferAlloc                   = -4,
+  TresorErrorHash                          = -5,
+  TresorErrorCipher                        = -6,
   
-  TresorErrorUnexpectedClassInPath      = -20,
-  TresorErrorUnexpectedObjectClass      = -21,
-  TresorErrorPathMismatch               = -22,
-  TresorErrorPathShouldNotBeNil         = -23,
-  TresorErrorPayloadShouldNotBeNil      = -24,
-  TresorErrorPayloadIsNotDecrypted      = -25,
-  TresorErrorNoPassword                 = -26,
-  TresorErrorNoPaddingFound             = -27,
-  TresorErrorPaddingHashMismatch        = -28,
-  TresorErrorNoPayloadClassNameFound    = -29,
-  TresorErrorNoPayloadDataFound         = -30,
+  TresorErrorUnexpectedClassInPath         = -20,
+  TresorErrorUnexpectedObjectClass         = -21,
+  TresorErrorPathMismatch                  = -22,
+  TresorErrorPathShouldNotBeNil            = -23,
+  TresorErrorPayloadShouldNotBeNil         = -24,
+  TresorErrorPayloadIsNotDecrypted         = -25,
+  TresorErrorNoPassword                    = -26,
+  TresorErrorNoPaddingFound                = -27,
+  TresorErrorPaddingHashMismatch           = -28,
+  TresorErrorNoPayloadClassNameFound       = -29,
+  TresorErrorNoPayloadDataFound            = -30,
   
-  TresorErrorCouldNotSerializePayload   = -31,
-  TresorErrorCouldNotDeserializePayload = -32,
+  TresorErrorCouldNotSerializePayload      = -31,
+  TresorErrorCouldNotDeserializePayload    = -32,
   
-  TresorErrorCouldNotFindPINMasterKey   = -33,
-  TresorErrorKeyForPayloadNotSet        = -34,
-  TresorErrorCommitPayloadoidNotSet     = -35,
+  TresorErrorCouldNotFindPINMasterKey      = -33,
+  TresorErrorKeyForPayloadNotSet           = -34,
+  TresorErrorCommitPayloadoidNotSet        = -35,
+  
+  TresorErrorMandatoryVaultParameterNotSet =-101,
+  TresorErrorVaultNameShouldBeUnique       =-100,
 };
 
 #define _TRESORERROR(errCode) [[NSError alloc] initWithDomain:kTresorErrorDomain code:errCode userInfo:nil]

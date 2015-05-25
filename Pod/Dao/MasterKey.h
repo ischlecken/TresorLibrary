@@ -43,6 +43,7 @@
 +(PMKPromise*) masterKeyWithVaultParameter:(VaultParameter*)parameter;
 -(PMKPromise*) decryptedMasterKeyUsingPIN:(NSString*)pin;
 
++(void)        deleteAllKeychainMasterkeys;
 @end
 
 

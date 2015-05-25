@@ -30,10 +30,11 @@
 @property(strong,nonatomic) UIImage*   icon;
 @property(strong,nonatomic) NSString*  pin;
 @property(strong,nonatomic) NSString*  puk;
+
+/* info fields */
 @property(strong,nonatomic) NSString*  kdfAlgorithm;
 @property(assign,nonatomic) NSUInteger kdfIterations;
 @property(strong,nonatomic) NSData*    kdfSalt;
-
 @property(strong,nonatomic) NSData*    masterCryptoKey;
 @end
 

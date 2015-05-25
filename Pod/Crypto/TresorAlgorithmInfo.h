@@ -42,9 +42,9 @@ typedef NS_ENUM(UInt8, TresorAlgorithmT)
 
 @interface TresorAlgorithmInfo : NSObject
 @property TresorAlgorithmT type;
-@property NSString*       name;
-@property NSUInteger      blockSize;
-@property NSUInteger      keySize;
+@property NSString*        name;
+@property NSUInteger       blockSize;
+@property NSUInteger       keySize;
 
 
 +(TresorAlgorithmInfo*) tresorAlgorithmInfoForName:(NSString*)name;

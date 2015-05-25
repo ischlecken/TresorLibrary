@@ -261,17 +261,24 @@
  */
 +(PMKPromise*) vaultObjectWithParameter:(VaultParameter*)parameter
 { PMKPromise* result = nil;
-  Vault*      vault  = [NSEntityDescription insertNewObjectForEntityForName:@"Vault" inManagedObjectContext:_MOC];
   
-  vault.createts  = [NSDate date];
-  vault.vaultname = parameter.name;
-  vault.vaulttype = parameter.type;
-  
-  if( parameter.icon )
-    vault.vaulticon = UIImagePNGRepresentation(parameter.icon);
-  
-  if( parameter && parameter.pin && parameter.puk )
-  { result = [MasterKey masterKeyWithVaultParameter:parameter]
+  if( parameter==nil     || parameter.name==nil || parameter.type==nil ||
+      parameter.pin==nil || parameter.puk==nil
+    )
+    result = [PMKPromise promiseWithValue:_TRESORERROR(TresorErrorMandatoryVaultParameterNotSet)];
+  else if( [self findVaultByName:parameter.name andError:nil] )
+    result = [PMKPromise promiseWithValue:_TRESORERROR(TresorErrorVaultNameShouldBeUnique)];
+  else
+  { Vault* vault  = [NSEntityDescription insertNewObjectForEntityForName:@"Vault" inManagedObjectContext:_MOC];
+    
+    vault.createts  = [NSDate date];
+    vault.vaultname = parameter.name;
+    vault.vaulttype = parameter.type;
+    
+    if( parameter.icon )
+      vault.vaulticon = UIImagePNGRepresentation(parameter.icon);
+    
+    result = [MasterKey masterKeyWithVaultParameter:parameter]
     .then(^(MasterKey* pin,MasterKey* puk)
     { pin.vault = vault;
       puk.vault = vault;
@@ -292,14 +299,6 @@
       
       return error;
     });
-  } /* of if */
-  else
-  { NSError* error;
-    
-    if( [_MOC save:&error] )
-      result = [PMKPromise promiseWithValue:vault];
-    else
-      result = [PMKPromise promiseWithValue:error];
   } /* of else */
   
   return result;

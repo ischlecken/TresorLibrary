@@ -67,130 +67,128 @@
  *
  */
 +(PMKPromise*) masterKeyWithVaultParameter:(VaultParameter*)parameter
-{ PMKPromise* result = [PMKPromise promiseWithResolverBlock:^(PMKResolver resolve)
-  {
-    dispatch_async([[GCDQueue sharedInstance] serialBackgroundQueue], ^
-    { _NSLOG(@"start");
+{ PMKPromise* result = [PMKPromise promiseWithValue:nil]
+  .thenOn([[GCDQueue sharedInstance] serialBackgroundQueue], ^(id dummy)
+  { _NSLOG(@"start");
 
-      NSError*                   error = nil;
-      CreateMasterKeysParameter* cmkp  = nil;
+    NSError*                   error = nil;
+    CreateMasterKeysParameter* cmkp  = nil;
+    
+    { TresorAlgorithmInfo*  encryptAlgo  = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256CC];
+      TresorAlgorithmInfo*  deriveAlgo   = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmPBKDF2CC];
+      NSData*               pinData      = [parameter.pin hexString2RawValue];
+      NSData*               pukData      = [parameter.puk hexString2RawValue];
+      NSUInteger            keySize      = encryptAlgo.keySize;
+      NSUInteger            iterations   = 2000000;
       
-      { TresorAlgorithmInfo*  encryptAlgo  = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmAES256CC];
-        TresorAlgorithmInfo*  deriveAlgo   = [TresorAlgorithmInfo tresorAlgorithmInfoForType:tresorAlgorithmPBKDF2CC];
-        NSData*               pinData      = [parameter.pin hexString2RawValue];
-        NSData*               pukData      = [parameter.puk hexString2RawValue];
-        NSUInteger            keySize      = encryptAlgo.keySize;
-        NSUInteger            iterations   = 2000000;
-        
 #if TARGET_IPHONE_SIMULATOR
-        iterations *= 4;
+      iterations *= 4;
 #endif
-        
-        NSData*  pinKDFSalt    = [NSData dataWithRandom:keySize];
-        NSData*  pinDerivedKey = [pinData deriveKeyWithAlgorithm:deriveAlgo
-                                                        withLength:keySize
-                                                         usingSalt:pinKDFSalt
-                                                     andIterations:iterations
-                                                             error:&error];
-        if( pinDerivedKey==nil )
-          goto cleanup;
-
-        NSData*  pukKDFSalt    = [NSData dataWithRandom:keySize];
-        NSData*  pukDerivedKey = [pukData deriveKeyWithAlgorithm:deriveAlgo
+      
+      NSData*  pinKDFSalt    = [NSData dataWithRandom:keySize];
+      NSData*  pinDerivedKey = [pinData deriveKeyWithAlgorithm:deriveAlgo
                                                       withLength:keySize
-                                                       usingSalt:pukKDFSalt
+                                                       usingSalt:pinKDFSalt
                                                    andIterations:iterations
                                                            error:&error];
-        if( pukDerivedKey==nil )
-          goto cleanup;
-        
-        NSData* masterCryptoKey0   = [NSData dataWithRandom:keySize];
-        _NSLOG(@"masterCryptoKey0:%@",[masterCryptoKey0 shortHexStringValue]);
-        
-        /**
-         * this is the master key that is used for the encryption of all other keys
-         */
-        NSData* masterCryptoKey1   = [masterCryptoKey0 deriveKeyWithAlgorithm:deriveAlgo
-                                                                                        withLength:keySize
-                                                                                         usingSalt:[NSData dataWithRandom:keySize]
-                                                                                     andIterations:1000000
-                                                                                             error:&error];
-        
-        if( masterCryptoKey1==nil )
-          goto cleanup;
-        
-        parameter.masterCryptoKey = masterCryptoKey1;
-        
-        _NSLOG(@"masterCryptoKey1:%@",[masterCryptoKey1 shortHexStringValue]);
-        
-        NSData* pinMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
-        NSData* pinMasterEncryptedKey = [NSData encryptPayload:masterCryptoKey1
-                                                usingAlgorithm:encryptAlgo
-                                               andDecryptedKey:pinDerivedKey
-                                                   andCryptoIV:pinMasterCryptoIV
-                                                      andError:&error];
-        
-        if( pinMasterEncryptedKey==nil )
-          goto cleanup;
+      if( pinDerivedKey==nil )
+        goto cleanup;
 
-        _NSLOG(@"pinMasterEncryptedKey:%@",[pinMasterEncryptedKey shortHexStringValue]);
-
-        NSData* pukMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
-        NSData* pukMasterEncryptedKey = [NSData encryptPayload:masterCryptoKey1
-                                                usingAlgorithm:encryptAlgo
-                                               andDecryptedKey:pukDerivedKey
-                                                   andCryptoIV:pukMasterCryptoIV
-                                                      andError:&error];
-        
-        if( pukMasterEncryptedKey==nil )
-          goto cleanup;
-        
-        _NSLOG(@"pukMasterEncryptedKey:%@",[pukMasterEncryptedKey shortHexStringValue]);
-
-        NSString* keyChainID4EncryptedPinMasterKey = [NSString stringUniqueID];
-        NSString* keyChainID4EncryptedPUKMasterKey = [NSString stringUniqueID];
-        
-        [SSKeychain setAccessibilityType:kSecAttrAccessibleWhenUnlocked];
-        
-        if( ![SSKeychain setPassword:[pinMasterEncryptedKey hexStringValue]
-                          forService:kTresorKeychainServiceName
-                             account:keyChainID4EncryptedPinMasterKey
-                               error:&error]
-           )
-          goto cleanup;
-
-        if( ![SSKeychain setPassword:[pukMasterEncryptedKey hexStringValue]
-                          forService:kTresorKeychainServiceName
-                             account:keyChainID4EncryptedPUKMasterKey
-                               error:&error]
-           )
-          goto cleanup;
-        
-        
-        cmkp                                  = [CreateMasterKeysParameter new];
-        
-        cmkp.cryptoAlgorithm                  = encryptAlgo.name;
-        cmkp.kdfAlgorithm                     = deriveAlgo.name;
-        cmkp.kdfIterations                    = iterations;
-        
-        cmkp.keyChainID4EncryptedPinMasterKey = keyChainID4EncryptedPinMasterKey;
-        cmkp.pinMasterCryptoIV                = pinMasterCryptoIV;
-        cmkp.pinKDFSalt                       = pinKDFSalt;
-
-        cmkp.keyChainID4EncryptedPUKMasterKey = keyChainID4EncryptedPUKMasterKey;
-        cmkp.pukMasterCryptoIV                = pukMasterCryptoIV;
-        cmkp.pukKDFSalt                       = pukKDFSalt;
-      }
+      NSData*  pukKDFSalt    = [NSData dataWithRandom:keySize];
+      NSData*  pukDerivedKey = [pukData deriveKeyWithAlgorithm:deriveAlgo
+                                                    withLength:keySize
+                                                     usingSalt:pukKDFSalt
+                                                 andIterations:iterations
+                                                         error:&error];
+      if( pukDerivedKey==nil )
+        goto cleanup;
       
+      NSData* masterCryptoKey0   = [NSData dataWithRandom:keySize];
+      _NSLOG(@"masterCryptoKey0:%@",[masterCryptoKey0 shortHexStringValue]);
+      
+      /**
+       * this is the master key that is used for the encryption of all other keys
+       */
+      NSData* masterCryptoKey1   = [masterCryptoKey0 deriveKeyWithAlgorithm:deriveAlgo
+                                                                                      withLength:keySize
+                                                                                       usingSalt:[NSData dataWithRandom:keySize]
+                                                                                   andIterations:1000000
+                                                                                           error:&error];
+      
+      if( masterCryptoKey1==nil )
+        goto cleanup;
+      
+      parameter.masterCryptoKey = masterCryptoKey1;
+      parameter.kdfAlgorithm    = deriveAlgo.name;
+      parameter.kdfIterations   = iterations;
+      parameter.kdfSalt         = pinKDFSalt;
+      
+      _NSLOG(@"masterCryptoKey1:%@",[masterCryptoKey1 shortHexStringValue]);
+      
+      NSData* pinMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
+      NSData* pinMasterEncryptedKey = [NSData encryptPayload:masterCryptoKey1
+                                              usingAlgorithm:encryptAlgo
+                                             andDecryptedKey:pinDerivedKey
+                                                 andCryptoIV:pinMasterCryptoIV
+                                                    andError:&error];
+      
+      if( pinMasterEncryptedKey==nil )
+        goto cleanup;
+
+      _NSLOG(@"pinMasterEncryptedKey:%@",[pinMasterEncryptedKey shortHexStringValue]);
+
+      NSData* pukMasterCryptoIV     = [NSData dataWithRandom:encryptAlgo.blockSize];
+      NSData* pukMasterEncryptedKey = [NSData encryptPayload:masterCryptoKey1
+                                              usingAlgorithm:encryptAlgo
+                                             andDecryptedKey:pukDerivedKey
+                                                 andCryptoIV:pukMasterCryptoIV
+                                                    andError:&error];
+      
+      if( pukMasterEncryptedKey==nil )
+        goto cleanup;
+      
+      _NSLOG(@"pukMasterEncryptedKey:%@",[pukMasterEncryptedKey shortHexStringValue]);
+
+      NSString* keyChainID4EncryptedPinMasterKey = [NSString stringUniqueID];
+      NSString* keyChainID4EncryptedPUKMasterKey = [NSString stringUniqueID];
+      
+      [SSKeychain setAccessibilityType:kSecAttrAccessibleWhenUnlocked];
+      
+      if( ![SSKeychain setPassword:[pinMasterEncryptedKey hexStringValue]
+                        forService:kTresorKeychainServiceName
+                           account:keyChainID4EncryptedPinMasterKey
+                             error:&error]
+         )
+        goto cleanup;
+
+      if( ![SSKeychain setPassword:[pukMasterEncryptedKey hexStringValue]
+                        forService:kTresorKeychainServiceName
+                           account:keyChainID4EncryptedPUKMasterKey
+                             error:&error]
+         )
+        goto cleanup;
+      
+      
+      cmkp                                  = [CreateMasterKeysParameter new];
+      
+      cmkp.cryptoAlgorithm                  = encryptAlgo.name;
+      cmkp.kdfAlgorithm                     = deriveAlgo.name;
+      cmkp.kdfIterations                    = iterations;
+      
+      cmkp.keyChainID4EncryptedPinMasterKey = keyChainID4EncryptedPinMasterKey;
+      cmkp.pinMasterCryptoIV                = pinMasterCryptoIV;
+      cmkp.pinKDFSalt                       = pinKDFSalt;
+
+      cmkp.keyChainID4EncryptedPUKMasterKey = keyChainID4EncryptedPUKMasterKey;
+      cmkp.pukMasterCryptoIV                = pukMasterCryptoIV;
+      cmkp.pukKDFSalt                       = pukKDFSalt;
+    }
+    
 cleanup:
-      if( cmkp )
-        resolve(cmkp);
-      else
-        resolve(error);
-      
-      _NSLOG(@"stop");
-    });
-  }]
+    _NSLOG(@"stop");
+    
+    return cmkp ? cmkp : error;
+  })
   .then(^(CreateMasterKeysParameter* cmkp)
   { MasterKey* masterKeyPIN              = [NSEntityDescription insertNewObjectForEntityForName:@"MasterKey" inManagedObjectContext:_MOC];
     masterKeyPIN.createts                = [NSDate date];
@@ -216,6 +214,19 @@ cleanup:
   });
 
   return result;
+}
+
+/**
+ *
+ */
++(void) deleteAllKeychainMasterkeys
+{ NSArray* allServiceAccounts = [SSKeychain accountsForService:kTresorKeychainServiceName];
+  for( NSDictionary* a in allServiceAccounts )
+  { NSString* account = [a objectForKey:kSSKeychainAccountKey];
+    
+    _NSLOG(@"delete masterkey in keychain for %@",account);
+    [SSKeychain deletePasswordForService:kTresorKeychainServiceName account:account];
+  } /* of if */
 }
 
 /**
