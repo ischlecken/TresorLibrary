@@ -365,8 +365,15 @@
  * 1.2.3.2 Payload:addedString     +++
  * 2 Payload:String5
  */
--(PMKPromise*) addPayloadItemWithTitle:(NSString*)title andSubtitle:(NSString*)subtitle andIcon:(NSString*)icon andIconColor:(NSString*)iconColor andObject:(id)obj forPath:(NSIndexPath*)path
+-(PMKPromise*) addPayloadItemWithTitle:(NSString*)title
+                           andSubtitle:(NSString*)subtitle
+                               andIcon:(NSString*)icon
+                          andIconColor:(NSString*)iconColor
+                             andObject:(id)obj
+                               forPath:(NSIndexPath*)path
 { __block NSMutableArray* parentPath = nil;
+  
+  _NSLOG(@"title:%@ subtitle:%@ object:%@ path:%@",title,subtitle,obj,path);
   
   PMKPromise* result = [self parentPathForPath:path]
     .then(^(NSMutableArray* promisedParentPath)
@@ -575,6 +582,8 @@
  */
 -(PMKPromise*) deletePayloadItemForPath:(NSIndexPath*)path atPosition:(NSInteger)position
 { __block NSMutableArray* parentPath = nil;
+  
+  _NSLOG(@"path:%@ position:%ld",path,position);
   
   PMKPromise* result = [self parentPathForPath:path]
     .then(^(NSMutableArray *promisedParentPath)

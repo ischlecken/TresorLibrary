@@ -554,7 +554,7 @@
     } /* of if */
   } /* of if */
   
-  _NSLOG(@"%@:%@",colorName,result);
+  //_NSLOG(@"%@:%@",colorName,result);
   
   return result;
 }

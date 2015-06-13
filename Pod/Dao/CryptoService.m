@@ -87,7 +87,13 @@
   
   if( self.delegate==nil )
     @throw [NSException exceptionWithName:@"DelegateNotSetException" reason:nil userInfo:nil];
-  
+
+  if( object==nil )
+    @throw [NSException exceptionWithName:@"ObjectShouldNotBeNil" reason:nil userInfo:nil];
+
+  if( commit==nil )
+    @throw [NSException exceptionWithName:@"CommitShouldNotBeNil" reason:nil userInfo:nil];
+
   MasterKey* masterKey = [commit.vault pinMasterKey];
   if( masterKey==nil )
     result = [PMKPromise promiseWithValue:_TRESORERROR(TresorErrorCouldNotFindPINMasterKey)];
