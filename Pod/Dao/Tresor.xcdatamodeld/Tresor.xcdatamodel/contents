@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6254" systemVersion="14B25" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+<model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="7701" systemVersion="14D136" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
     <entity name="Audit" representedClassName="Audit" syncable="YES">
         <attribute name="createts" attributeType="Date">
             <userInfo/>
@@ -16,7 +16,7 @@
         <attribute name="parentcommitoid" optional="YES" attributeType="String" maxValueString="256" syncable="YES"/>
         <attribute name="payloadoid" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="payloads" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Payload" inverseName="commits" inverseEntity="Payload" syncable="YES"/>
-        <relationship name="vault" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="commit" inverseEntity="Vault" syncable="YES"/>
+        <relationship name="vault" maxCount="1" deletionRule="Nullify" destinationEntity="Vault" inverseName="commits" inverseEntity="Vault" syncable="YES"/>
     </entity>
     <entity name="Key" representedClassName="Key" syncable="YES">
         <attribute name="createts" attributeType="Date" syncable="YES"/>
@@ -48,21 +48,22 @@
         <relationship name="key" maxCount="1" deletionRule="Cascade" destinationEntity="Key" inverseName="payload" inverseEntity="Key" syncable="YES"/>
     </entity>
     <entity name="Vault" representedClassName="Vault" syncable="YES">
+        <attribute name="commitoid" attributeType="String" syncable="YES"/>
         <attribute name="createts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="modifyts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="nextcommitoid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="vaulticon" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="vaultname" attributeType="String" syncable="YES"/>
         <attribute name="vaulttype" optional="YES" attributeType="String" maxValueString="32" syncable="YES"/>
-        <relationship name="commit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Commit" inverseName="vault" inverseEntity="Commit" syncable="YES"/>
+        <relationship name="commits" toMany="YES" deletionRule="Nullify" destinationEntity="Commit" inverseName="vault" inverseEntity="Commit" syncable="YES"/>
         <relationship name="masterkeys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MasterKey" inverseName="vault" inverseEntity="MasterKey" syncable="YES"/>
     </entity>
     <elements>
         <element name="Audit" positionX="-477" positionY="380" width="128" height="133"/>
         <element name="Commit" positionX="-279" positionY="29" width="128" height="133"/>
         <element name="Key" positionX="81" positionY="44" width="128" height="118"/>
-        <element name="MasterKey" positionX="79" positionY="198" width="128" height="223"/>
+        <element name="MasterKey" positionX="97" positionY="234" width="128" height="223"/>
         <element name="Payload" positionX="-90" positionY="29" width="128" height="133"/>
-        <element name="Vault" positionX="-477" positionY="81" width="128" height="163"/>
+        <element name="Vault" positionX="-452" positionY="53" width="128" height="178"/>
     </elements>
 </model>

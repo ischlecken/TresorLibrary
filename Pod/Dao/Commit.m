@@ -625,6 +625,8 @@
   commit.parentcommitoid = nil;
   commit.vault           = vault;
   
+  [vault setHead:commit];
+  
   PMKPromise* result = [Payload payloadWithObject:[PayloadItemList new] inCommit:commit usingDecryptedMasterKey:decryptedMasterKey]
   .then(^(Payload* payload)
   { commit.payloadoid      = [payload uniqueObjectId];

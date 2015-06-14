@@ -37,7 +37,8 @@
 @dynamic vaulttype;
 @dynamic vaultname;
 @dynamic vaulticon;
-@dynamic commit;
+@dynamic commits;
+@dynamic commitoid;
 @dynamic nextcommitoid;
 @dynamic masterkeys;
 
@@ -85,6 +86,24 @@
   return result;
 }
 
+/**
+ *
+ */
+-(Commit*) headCommit
+{ Commit* result = nil;
+  
+  for( Commit* c in self.commits )
+  {
+    if( [c.uniqueObjectId isEqualToString:self.commitoid] )
+    { result = c;
+      
+      break;
+    } /* of if */
+  } /* of for */
+  
+  return result;
+}
+
 
 /**
  *
@@ -93,7 +112,7 @@
 { Commit* result = self.nextCommit;
   
   if( result==nil )
-  { result = [Commit commitObjectUsingParentCommit:self.commit forVault:self andError:error];
+  { result = [Commit commitObjectUsingParentCommit:self.headCommit forVault:self andError:error];
     
     if( result )
       self.nextcommitoid = [result uniqueObjectId];
@@ -149,13 +168,22 @@
 -(void) didChangeValueForKey:(NSString *)key
 { [super didChangeValueForKey:key];
  
-  if( [key isEqualToString:@"commit"] )
+  if( [key isEqualToString:@"commitoid"] )
   { self.nextcommitoid = nil;
     
     dispatch_async(dispatch_get_main_queue(), ^
     { [self deleteOrphanPayloads];
     });
   } /* of if */
+}
+
+/**
+ *
+ */
+-(void) setHead:(Commit*)commit
+{ self.commitoid = commit.uniqueObjectId;
+  
+  [self addCommitsObject:commit];
 }
 
 /**
@@ -195,32 +223,6 @@
 #endif
 }
 
-/**
- *
- */
--(NSArray*) allCommits:(NSError**)error
-{ NSMutableArray* result = [[NSMutableArray alloc] initWithCapacity:10];
-  Commit*         c      = self.commit;
-  
-  if( c )
-  { NSString* nextcommitoid = c.parentcommitoid;
-    
-    [result addObject:c];
-    
-    while( nextcommitoid )
-    { c = (Commit*)[_MOC loadObjectWithObjectID:nextcommitoid andError:error];
-      
-      if( c )
-      { [result addObject:c];
-        
-        nextcommitoid = c.parentcommitoid;
-      } /* of if */
-    } /* of while */
-  } /* of if */
-  
-  return result;
-}
-
 
 
 /**
@@ -244,7 +246,7 @@
     resolve(self);
   }]
   .then(^()
-  { return [self.commit acceptVisitor:visitor];
+  { return [self.headCommit acceptVisitor:visitor];
   })
   .then(^()
   { if( [visitor respondsToSelector:@selector(visitVault:andState:)] )
@@ -343,13 +345,12 @@
  * delete all commit2payload records
  */
 +(BOOL) deleteVault:(Vault*)vault andError:(NSError**)error
-{ BOOL            result      = NO;
-  NSArray*        allCommits  = nil;
+{ BOOL result = NO;
   
   _RESETERROR;
   
-  if( vault && (allCommits=[vault allCommits:error]) )
-  { for( Commit* c in allCommits )
+  if( vault )
+  { for( Commit* c in vault.commits )
     { for( Payload* p in c.payloads )
         [_MOC deleteObject:p];
       

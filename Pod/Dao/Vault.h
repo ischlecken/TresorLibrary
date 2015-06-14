@@ -46,18 +46,20 @@
 @property (nonatomic, retain) NSString* vaultname;
 @property (nonatomic, retain) NSData*   vaulticon;
 @property (nonatomic, retain) NSString* nextcommitoid;
-@property (nonatomic, retain) Commit*   commit;
+@property (nonatomic, retain) NSString* commitoid;
+@property (nonatomic, retain) NSSet*    commits;
 @property (nonatomic, retain) NSSet*    masterkeys;
+
+@property (nonatomic, strong, readonly) Commit*   headCommit;
 
 #pragma mark dao extension
 
 -(Commit*)     nextCommit;
 -(Commit*)     useOrCreateNextCommit:(NSError**)error;
 -(BOOL)        cancelNextCommit:(NSError**)error;
-
--(NSArray*)    allCommits:(NSError**)error;
 -(MasterKey*)  pinMasterKey;
 
+-(void)        setHead:(Commit*)commit;
 +(PMKPromise*) vaultObjectWithParameter:(VaultParameter*)parameter;
 +(Vault*)      findVaultByName:(NSString*)vaultName andError:(NSError**)error;
 +(NSArray*)    allVaults:(NSError**)error;
@@ -71,4 +73,9 @@
 -(void)removeMasterkeysObject:(MasterKey *)value;
 -(void)addMasterkeys:(NSSet *)values;
 -(void)removeMasterkeys:(NSSet *)values;
+
+-(void)addCommitsObject:(Commit *)value;
+-(void)removeCommitsObject:(Commit *)value;
+-(void)addCommits:(NSSet *)values;
+-(void)removeCommits:(NSSet *)values;
 @end
