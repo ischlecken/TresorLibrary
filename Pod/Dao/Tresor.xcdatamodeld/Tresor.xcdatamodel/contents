@@ -48,13 +48,13 @@
         <relationship name="key" maxCount="1" deletionRule="Cascade" destinationEntity="Key" inverseName="payload" inverseEntity="Key" syncable="YES"/>
     </entity>
     <entity name="Vault" representedClassName="Vault" syncable="YES">
-        <attribute name="commitoid" attributeType="String" syncable="YES"/>
+        <attribute name="commitoid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="createts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="modifyts" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="nextcommitoid" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="vaulticon" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="vaultname" attributeType="String" syncable="YES"/>
-        <attribute name="vaulttype" optional="YES" attributeType="String" maxValueString="32" syncable="YES"/>
+        <attribute name="vaulttype" attributeType="String" maxValueString="32" syncable="YES"/>
         <relationship name="commits" toMany="YES" deletionRule="Nullify" destinationEntity="Commit" inverseName="vault" inverseEntity="Commit" syncable="YES"/>
         <relationship name="masterkeys" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MasterKey" inverseName="vault" inverseEntity="MasterKey" syncable="YES"/>
     </entity>

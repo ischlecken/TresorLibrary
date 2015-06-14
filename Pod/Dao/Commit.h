@@ -59,7 +59,8 @@ typedef PayloadItemList* (^UpdateParentPathHandler)(PayloadItemList* pl);
 -(PMKPromise*)      payloadObject;
 
 +(Commit*)          commitObjectUsingParentCommit:(Commit*)parentCommit forVault:(Vault*)vault andError:(NSError**)error;
-+(PMKPromise*)      createInitialCommitForVault:(Vault*)vault andMasterCryptoKey:(NSData*)decryptedMasterKey;
++(PMKPromise*)      createInitialCommitUsingMasterCryptoKey:(NSData*)decryptedMasterKey forVault:(Vault*)vault;
+
 @end
 
 @interface Commit (CoreDataGeneratedAccessors)

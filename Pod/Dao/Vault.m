@@ -93,15 +93,24 @@
 { Commit* result = nil;
   
   for( Commit* c in self.commits )
-  {
     if( [c.uniqueObjectId isEqualToString:self.commitoid] )
     { result = c;
       
       break;
     } /* of if */
-  } /* of for */
   
   return result;
+}
+
+/**
+ *
+ */
+-(void) setHeadCommit:(Commit*)commit
+{ self.commitoid = commit.uniqueObjectId;
+  self.nextcommitoid = nil;
+  
+  dispatch_async(dispatch_get_main_queue(), ^
+  { [self deleteOrphanPayloads]; });
 }
 
 
@@ -115,8 +124,11 @@
   { result = [Commit commitObjectUsingParentCommit:self.headCommit forVault:self andError:error];
     
     if( result )
+    { [self addCommitsObject:result];
+      
       self.nextcommitoid = [result uniqueObjectId];
-
+    } /* of if */
+    
     [_MOC save:error];
   } /* of if */
   
@@ -161,30 +173,6 @@
   return result;
 }
 
-
-/**
- *
- */
--(void) didChangeValueForKey:(NSString *)key
-{ [super didChangeValueForKey:key];
- 
-  if( [key isEqualToString:@"commitoid"] )
-  { self.nextcommitoid = nil;
-    
-    dispatch_async(dispatch_get_main_queue(), ^
-    { [self deleteOrphanPayloads];
-    });
-  } /* of if */
-}
-
-/**
- *
- */
--(void) setHead:(Commit*)commit
-{ self.commitoid = commit.uniqueObjectId;
-  
-  [self addCommitsObject:commit];
-}
 
 /**
  *
@@ -285,10 +273,12 @@
     { pin.vault = vault;
       puk.vault = vault;
       
-      return [Commit createInitialCommitForVault:vault andMasterCryptoKey:parameter.masterCryptoKey];
+      return [Commit createInitialCommitUsingMasterCryptoKey:parameter.masterCryptoKey forVault:vault];
     })
     .then(^(Commit* commit)
     { NSError* error = nil;
+      
+      [vault setHeadCommit:commit];
       
       parameter.masterCryptoKey = nil;
     

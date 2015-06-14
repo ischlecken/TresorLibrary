@@ -50,7 +50,7 @@
 @property (nonatomic, retain) NSSet*    commits;
 @property (nonatomic, retain) NSSet*    masterkeys;
 
-@property (nonatomic, strong, readonly) Commit*   headCommit;
+@property (nonatomic, strong) Commit*   headCommit;
 
 #pragma mark dao extension
 
@@ -59,7 +59,6 @@
 -(BOOL)        cancelNextCommit:(NSError**)error;
 -(MasterKey*)  pinMasterKey;
 
--(void)        setHead:(Commit*)commit;
 +(PMKPromise*) vaultObjectWithParameter:(VaultParameter*)parameter;
 +(Vault*)      findVaultByName:(NSString*)vaultName andError:(NSError**)error;
 +(NSArray*)    allVaults:(NSError**)error;

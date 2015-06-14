@@ -617,7 +617,7 @@
 /**
  *
  */
-+(PMKPromise*) createInitialCommitForVault:(Vault*)vault andMasterCryptoKey:(NSData*)decryptedMasterKey
++(PMKPromise*) createInitialCommitUsingMasterCryptoKey:(NSData*)decryptedMasterKey forVault:(Vault*)vault
 { Commit* commit = [NSEntityDescription insertNewObjectForEntityForName:@"Commit" inManagedObjectContext:_MOC];
   
   commit.message         = @"Initial Commit";
@@ -625,11 +625,9 @@
   commit.parentcommitoid = nil;
   commit.vault           = vault;
   
-  [vault setHead:commit];
-  
   PMKPromise* result = [Payload payloadWithObject:[PayloadItemList new] inCommit:commit usingDecryptedMasterKey:decryptedMasterKey]
   .then(^(Payload* payload)
-  { commit.payloadoid      = [payload uniqueObjectId];
+  { commit.payloadoid = [payload uniqueObjectId];
     
     [commit addPayloadsObject:payload];
     
