@@ -408,7 +408,7 @@
     });
  
   return result;
-} /* of addPayloadItem: */
+} /* of addPayloadItemWithTitle: */
 
 
 /**
